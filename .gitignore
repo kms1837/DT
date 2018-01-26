@@ -1,0 +1,11 @@
+Temp/
+TEMP/
+metadata/
+Library/
+ProjectSettings/
+.vs/
+
+*.log
+*.info
+*.sln
+*.csproj
