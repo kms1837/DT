@@ -4,6 +4,7 @@ metadata/
 Library/
 ProjectSettings/
 .vs/
+backup/
 
 *.log
 *.info
