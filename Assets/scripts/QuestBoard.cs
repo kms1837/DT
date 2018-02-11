@@ -87,7 +87,7 @@ public class QuestBoard : MonoBehaviour
         userList = new ArrayList();
 
         userSkillList = new ArrayList();
-        for (int i = 0; i < dummySkillNameList.Length; i++) {
+        for (int i = 0; i < dummySkillSpecNameList.Length; i++) {
             userSkillList.Add(i);
         }
 
@@ -340,27 +340,36 @@ public class QuestBoard : MonoBehaviour
         }
     }
 
-    
-
     private void partySkillBtnBatch(string groupName, int[] btnNames, Vector2 basePosition) {
         Transform selectBtnGroup;
+        Transform groupContent;
         Rect btnRect = SkillSelectButton.transform.GetComponent<RectTransform>().rect;
-        float groupWidth = (btnRect.width + ButtonMargin);
+        float groupWidth = ((btnRect.width + ButtonMargin) * btnNames.Length) + (ButtonMargin * 2);
+        float leftStandard = -(groupWidth / 2) + (btnRect.width / 2) + ButtonMargin;
 
         selectBtnGroup = Common.createGroup(
             groupName,
-            new Vector2(groupWidth, 0),
+            new Vector2(1080, 0),
             new Vector2(basePosition.x, basePosition.y),
             CreateUI.transform);
 
-        float leftStandard = -(groupWidth / 2) + (btnRect.width / 2);
+        groupContent = Common.createGroup(
+            "Content",
+            new Vector2(groupWidth, 0),
+            new Vector2(leftStandard * -1, 0),
+            selectBtnGroup);
+
+        ScrollRect scrollObj = selectBtnGroup.gameObject.AddComponent<ScrollRect>();
+        scrollObj.content = groupContent.GetComponent<RectTransform>();
+        scrollObj.vertical = false;
+
         float left = leftStandard;
 
         int count = 0;
         foreach (int nameKey in btnNames) {
             Transform selectBtn = Instantiate(SkillSelectButton).transform;
-            selectBtn.GetChild(0).GetComponent<Text>().text = dummySkillNameList[nameKey];
-            selectBtn.SetParent(selectBtnGroup, false);
+            selectBtn.GetChild(0).GetComponent<Text>().text = dummySkillSpecNameList[nameKey];
+            selectBtn.SetParent(groupContent, false);
             selectBtn.localPosition = new Vector2(left, 0);
 
             int index = count;
