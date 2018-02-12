@@ -38,6 +38,8 @@ public class Character : MonoBehaviour {
 
     public enum CharacterType { Hero, NPC, Monster, Boss }
 
+    private string beforeDelayActionStr; // 선딜레이 중인 함수 이름(invoke 중인 상태)
+
     // Use this for initialization
     void Start () {
         Rect objRect = this.gameObject.GetComponent<RectTransform>().rect;
@@ -54,6 +56,8 @@ public class Character : MonoBehaviour {
 
         aggroRadius = objRect.width + 200;
         range = objRect.width + 10;
+
+        beforeDelayActionStr = string.Empty;
     }
 	
 	// Update is called once per frame
@@ -89,6 +93,12 @@ public class Character : MonoBehaviour {
         this.gameObject.GetComponent<Image>().color = new Color(255, 0, 0);
         Invoke("clear", 0.1f);
 
+        if (beforeDelayActionStr != string.Empty) {
+            CancelInvoke(beforeDelayActionStr);
+            beforeDelayActionStr = string.Empty;
+            status = (int)CharacterStatus.Battle;
+        }
+        
         healthPoint -= damage;
         if (healthPoint <= 0) {
             // dead
@@ -111,7 +121,8 @@ public class Character : MonoBehaviour {
             if (this.range >= distance) {
                 this.prevStatus = status;
                 this.status = (int)CharacterStatus.Attack;
-                Invoke("attch", beforeDelay);
+                beforeDelayActionStr = "attch";
+                Invoke(beforeDelayActionStr, beforeDelay);
             }
 
             if (this.aggroRadius < distance) {

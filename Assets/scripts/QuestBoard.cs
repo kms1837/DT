@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 public class QuestBoard : MonoBehaviour
 {
@@ -446,6 +447,10 @@ public class QuestBoard : MonoBehaviour
         MainUI.SetActive(false);
         Popup.SetActive(false);
     } // UI를 모두 숨깁니다.
+
+    public void battleStartBtnAction() {
+        SceneManager.LoadScene("battle_ground");
+    }
 
     private void clearCreateUI() {
         Common.clearCloneUIObj(CreateUI.transform);
