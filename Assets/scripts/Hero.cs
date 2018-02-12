@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Hero {
-    public string name;
-    public int level;
+public class Hero : Character {
     public int jobClass;
     public int passive;
     public int mainSkill;
