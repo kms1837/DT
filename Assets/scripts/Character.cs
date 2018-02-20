@@ -40,8 +40,12 @@ public class Character : MonoBehaviour {
 
     private string beforeDelayActionStr; // 선딜레이 중인 함수 이름(invoke 중인 상태)
 
-    // Use this for initialization
+    // ui
+    private StatusBar hpBar;
+    private StatusBar delayBar;
+
     void Start () {
+        Vector2 objPosition = this.transform.position;
         Rect objRect = this.gameObject.GetComponent<RectTransform>().rect;
 
         status = (int)CharacterStatus.Normal;
@@ -51,19 +55,31 @@ public class Character : MonoBehaviour {
         movementSpeed = 2;
         direction = 1;
         beforeDelay = 2.0f;
-        energyPower = 10;
+        afterDelay = 2.0f;
+        energyPower = 30;
         healthPoint = 100;
 
         aggroRadius = objRect.width + 200;
         range = objRect.width + 10;
 
         beforeDelayActionStr = string.Empty;
+
+        hpBar = this.gameObject.AddComponent<StatusBar>();
+        hpBar.init(healthPoint, new Vector2(objPosition.x, objPosition.y - (objRect.height*2)), new Vector2(objRect.width, 20), new Color(255.0f, 0, 0));
+
+        delayBar = this.gameObject.AddComponent<StatusBar>();
+        delayBar.init(0, new Vector2(objPosition.x, objPosition.y - (objRect.height*2) - 25), new Vector2(objRect.width, 20), new Color(0, 0, 255.0f));
+    }
+
+    private void updateUI() {
+        Vector2 objPosition = this.transform.position;
+        hpBar.setPosition(new Vector2(objPosition.x, hpBar.position.y));
+        delayBar.setPosition(new Vector2(objPosition.x, delayBar.position.y));
     }
 	
-	// Update is called once per frame
 	void Update () {
-		
-	}
+        updateUI();
+    }
 
     public void setTarget() {
 
@@ -81,13 +97,18 @@ public class Character : MonoBehaviour {
         if (range >= distance) {
             Character attchTarget = target.GetComponent<Character>();
             attchTarget.hit(energyPower);
-            Invoke("backStatus", afterDelay);
+            delay(afterDelay, "backStatus");
         }
     }
 
     private void backStatus() {
         status = prevStatus;
     } // 이전상태로 돌아감
+
+    private void delay(float time, string callBack) {
+        delayBar.runProgress(time);
+        Invoke(callBack, time);
+    }
 
     public void hit(float damage) {
         this.gameObject.GetComponent<Image>().color = new Color(255, 0, 0);
@@ -100,6 +121,8 @@ public class Character : MonoBehaviour {
         }
         
         healthPoint -= damage;
+        hpBar.setCurrent(healthPoint);
+
         if (healthPoint <= 0) {
             // dead
             Destroy(this.gameObject);
@@ -122,7 +145,9 @@ public class Character : MonoBehaviour {
                 this.prevStatus = status;
                 this.status = (int)CharacterStatus.Attack;
                 beforeDelayActionStr = "attch";
-                Invoke(beforeDelayActionStr, beforeDelay);
+
+                delayBar.setMaximum(beforeDelay);
+                delay(beforeDelay, beforeDelayActionStr);
             }
 
             if (this.aggroRadius < distance) {
