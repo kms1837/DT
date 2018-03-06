@@ -3,35 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Character : MonoBehaviour {
-
-    public string name;
-
+public class Character : Ability
+{
     public int status; // 케릭터 상태
     private int prevStatus; // 전 상태
     public int type; // 케릭터 타입
 
-    // status
-    public int level;
-    public float healthPoint; // HP
-    public float manaPoint; // MP
-
-    public float energyPower; // 기력
-    public float magicPower; // 마력
-    public float healthPower; // 체력
-    public float holyPower; // 신성력
-
-    public float attackSpeed; // 공격속도
-    public float movementSpeed; // 이동속도
-    public float range; // 공격거리
-
-    public float beforeDelay; // 선딜레이
-    public float afterDelay; // 후딜레이
+    public float currentHealthPoint; // HP
+    public float currentManaPoint; // MP
 
     public GameObject target; // 공격대상
 
     public int direction; // 방향
-    public float aggroRadius; // 인식 거리
 
     public enum CharacterStatus { Normal, Battle, Attack }
     // 평상시, 전투모드, 공격중
@@ -39,6 +22,10 @@ public class Character : MonoBehaviour {
     public enum CharacterType { Hero, NPC, Monster, Boss }
 
     private string beforeDelayActionStr; // 선딜레이 중인 함수 이름(invoke 중인 상태)
+
+    Ability[] equipment = new Ability[5]; // 장비
+
+    ArrayList buffList; // 버프, 디버프 리스트
 
     // ui
     private StatusBar hpBar;
@@ -58,6 +45,7 @@ public class Character : MonoBehaviour {
         afterDelay = 2.0f;
         energyPower = 30;
         healthPoint = 100;
+        currentHealthPoint = 100;
 
         aggroRadius = objRect.width + 200;
         range = objRect.width + 10;
@@ -69,6 +57,8 @@ public class Character : MonoBehaviour {
 
         delayBar = this.gameObject.AddComponent<StatusBar>();
         delayBar.init(0, new Vector2(objPosition.x, objPosition.y - (objRect.height*2) - 25), new Vector2(objRect.width, 20), new Color(0, 0, 255.0f));
+
+        buffList = new ArrayList();
     }
 
     private void updateUI() {
@@ -119,11 +109,11 @@ public class Character : MonoBehaviour {
             beforeDelayActionStr = string.Empty;
             status = (int)CharacterStatus.Battle;
         }
-        
-        healthPoint -= damage;
-        hpBar.setCurrent(healthPoint);
 
-        if (healthPoint <= 0) {
+        currentHealthPoint -= damage;
+        hpBar.setCurrent(currentHealthPoint);
+
+        if (currentHealthPoint <= 0) {
             // dead
             Destroy(this.gameObject);
         }
