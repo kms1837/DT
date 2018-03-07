@@ -1,16 +1,23 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class StatusBar : MonoBehaviour
 {
+    private bool guiFlag = false; // onGUI flag
+    public Vector2 position; // onGUI ver option
+
+    private Image barImg;
+    private Image moveBarImg;
+
     private Texture2D BarTexture;
     private Texture2D BackTexture;
 
     private float maximum;
     private float current;
 
-    public Vector2 position;
     private Vector2 size;
     private Color barColor;
 
@@ -26,11 +33,6 @@ public class StatusBar : MonoBehaviour
      2. temp.init(maximum, position, size, color);
      3. update temp.setCurrent() or temp.runProgress(second);
      */
-
-
-    public StatusBar (float setValue, Vector2 setPosition, Vector2 setSize, Color setColor) {
-        init(setValue, setPosition, setSize, setColor);
-    } // unity내에서 new키워드로 객체내 오브젝트 포함못시킴 addComponent를 사용하길 권장함.
 
     public void setCurrent(float setValue) {
         current = setValue;
@@ -56,47 +58,68 @@ public class StatusBar : MonoBehaviour
         }
     }
 
-    public void init(float setValue, Vector2 setPosition, Vector2 setSize, Color setColor) {
+    public void init(float setValue, Color setColor) {
         maximum = setValue;
         current = setValue;
+        barColor = setColor;
+
+        barImg = this.transform.Find("Bar").GetComponent<Image>();
+        moveBarImg = this.transform.Find("MoveBar").GetComponent<Image>();
+        barImg.color = barColor;
+    }
+
+    public void init(bool mode, float setValue, Vector2 setPosition, Vector2 setSize, Color setColor) {
+        this.init(setValue, setColor);
         position = setPosition;
         size = setSize;
-        barColor = setColor;
-    }
+    }// GUI ver
 
     public void setPosition(Vector2 positionVector) {
         position = positionVector;
     }
 
-    private void OnGUI() {
-        Vector2 texturePosition = new Vector2(position.x - (size.x/2), position.y - (size.y / 2));
-        GUI.DrawTexture(new Rect(texturePosition, size), BackTexture);
-
-        if (maximum > 0 && current > 0 && maximum >= current) {
-            Rect moveBarRect;
-            Rect barRect;
-
-            float moveBarEndPoint = movePoint < 0 ? (maximum / origin) : (maximum / current);
-            float barEndPoint = movePoint < 0 ? (maximum / current) : (maximum / origin);
-
-            moveBarRect = new Rect(texturePosition, new Vector2((size.x / moveBarEndPoint), size.y));
-            barRect = new Rect(texturePosition, new Vector2((size.x / barEndPoint), size.y));
-
-            GUI.color = new Color(0, 0, 0, 0.5f);
-            GUI.DrawTexture(moveBarRect, BarTexture);
-            GUI.color = barColor;
-            GUI.DrawTexture(barRect, BarTexture);
-        }
-    }
-
     private void Start() {
-        BarTexture = Resources.Load("imgs/dummy/statusbar") as Texture2D;
-        BackTexture = Resources.Load("imgs/dummy/backbar") as Texture2D;
+        if (guiFlag) {
+            BarTexture = Resources.Load("imgs/dummy/statusbar") as Texture2D;
+            BackTexture = Resources.Load("imgs/dummy/backbar") as Texture2D;
+        }
     }
 
     private void Update() {
         movePoint = current - origin;
         origin = origin + moveSpeed * movePoint;
+
+        if (maximum > 0 && current > 0 && maximum >= current) {
+            float moveBarEndPoint = movePoint < 0 ? (origin / maximum) : (current / maximum);
+            float barEndPoint = movePoint < 0 ? (current / maximum) : (origin / maximum);
+
+            barImg.fillAmount = barEndPoint;
+            moveBarImg.fillAmount = moveBarEndPoint;
+        }
+    }
+
+    private void OnGUI() {
+        if (guiFlag) {
+            Vector2 texturePosition = new Vector2(position.x - (size.x / 2), position.y - (size.y / 2));
+            GUI.DrawTexture(new Rect(texturePosition, size), BackTexture);
+
+            if (maximum > 0 && current > 0 && maximum >= current) {
+                Rect moveBarRect;
+                Rect barRect;
+
+                float moveBarEndPoint = movePoint < 0 ? (maximum / origin) : (maximum / current);
+                float barEndPoint = movePoint < 0 ? (maximum / current) : (maximum / origin);
+
+                moveBarRect = new Rect(texturePosition, new Vector2((size.x / moveBarEndPoint), size.y));
+                barRect = new Rect(texturePosition, new Vector2((size.x / barEndPoint), size.y));
+
+                GUI.color = new Color(0, 0, 0, 0.5f);
+                GUI.DrawTexture(moveBarRect, BarTexture);
+                GUI.color = barColor;
+                GUI.DrawTexture(barRect, BarTexture);
+                // Graphics.DrawTexture (권장사항 https://docs.unity3d.com/kr/530/ScriptReference/Graphics.DrawTexture.html)
+            }
+        }
     }
 }
  
