@@ -24,7 +24,7 @@ public class Character : Ability
 
     private string beforeDelayActionStr; // 선딜레이 중인 함수 이름(invoke 중인 상태)
 
-    Ability[] equipment = new Ability[5]; // 장비
+    public Ability[] equipments; // 장비
 
     public ArrayList buffList; // 버프, 디버프 리스트
 
@@ -69,6 +69,11 @@ public class Character : Ability
         delayBar.init(0, new Color(0, 0, 255.0f));
 
         buffList = new ArrayList();
+        equipments = new Ability[5];
+
+        for (int i=0; i<5; i++) {
+            equipments[i] = new Ability();
+        }
     }
 
     private void updateUI() {
@@ -103,8 +108,13 @@ public class Character : Ability
         if (range >= distance) {
             Character attchTarget = target.GetComponent<Character>();
             float damage = this.energyPower;
+
             foreach(Skill buff in buffList) {
                 damage += buff.energyPower;
+            }
+
+            foreach (Ability equipment in equipments) {
+                damage += equipment.energyPower;
             }
 
             attchTarget.hit(damage);
@@ -117,7 +127,8 @@ public class Character : Ability
     } // 이전상태로 돌아감
 
     private void delay(float time, string callBack) {
-        delayBar.runProgress(time);
+        delayBar.setMaximum(time);
+        delayBar.runProgress();
         Invoke(callBack, time);
     }
 

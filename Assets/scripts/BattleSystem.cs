@@ -9,7 +9,8 @@ public class BattleSystem : MonoBehaviour {
 
     public GameObject BottomView;
 
-    private StatusBar skillCollTimeBar;
+    private StatusBar mainSkillCollTimeBar;
+    private StatusBar subSkillCollTimeBar;
 
     // Use this for initialization
     void Start () {
@@ -29,35 +30,54 @@ public class BattleSystem : MonoBehaviour {
         }
 
         Character UserObj = User.GetComponent<Character>();
-        Skill testSkill = User.AddComponent<Skill>();
+        Skill testMainSkill = User.AddComponent<Skill>();
 
-        UserObj.mainSkillObj = testSkill;
+        UserObj.mainSkillObj = testMainSkill;
 
-        testSkill.targetList.Add(UserObj);
-        testSkill.type = (int)Skill.SkillType.Holy;
+        testMainSkill.targetList.Add(UserObj);
+        testMainSkill.type = (int)Skill.SkillType.Holy;
         //testSkill.type = (int)Skill.SkillType.Buff;
-        testSkill.healthPoint = 20;
-        testSkill.energyPower = 50;
-        testSkill.duration = 300;
-        testSkill.coolTime = 5;
+        testMainSkill.healthPoint = 50;
+        testMainSkill.energyPower = 50;
+        testMainSkill.duration = 300;
+        testMainSkill.coolTime = 10;
+
+        Skill testSubSkill = User.AddComponent<Skill>();
+
+        UserObj.subSkillObj = testSubSkill;
+
+        testSubSkill.targetList.Add(UserObj);
+        testSubSkill.type = (int)Skill.SkillType.Holy;
+        testSubSkill.healthPoint = 5;
+        testSubSkill.energyPower = 50;
+        testSubSkill.duration = 300;
+        testSubSkill.coolTime = 1;
 
         Transform mainSkillBtn = BottomView.transform.Find("MainSkillButton");
+        Transform subvSkillBtn = BottomView.transform.Find("SubSkillButton");
 
-        skillCollTimeBar = mainSkillBtn.Find("CoolTimeBar").GetComponent<StatusBar>();
-        skillCollTimeBar.init(testSkill.coolTime, new Color(255.0f, 100, 0));
+        mainSkillCollTimeBar = mainSkillBtn.Find("CoolTimeBar").GetComponent<StatusBar>();
+        mainSkillCollTimeBar.init(testMainSkill.coolTime, new Color(255.0f, 255.0f, 255.0f));
+
+        subSkillCollTimeBar = subvSkillBtn.Find("CoolTimeBar").GetComponent<StatusBar>();
+        subSkillCollTimeBar.init(testSubSkill.coolTime, new Color(255.0f, 255.0f, 255.0f));
+
+        UserObj.equipments[0] = new Ability();
+        UserObj.equipments[0].energyPower = 40; // 공격력 40 장비 장착 더미
     }
 
     public void ActiveUserMainSkill () {
         Character UserObj = User.GetComponent<Character>();
         if (UserObj.ActiveMainSkill()) {
-            Skill testSkill = User.GetComponent<Skill>();
-            skillCollTimeBar.runProgress(testSkill.coolTime);
+            mainSkillCollTimeBar.runProgress();
         };
     }
 
     public void ActiveUserSubSkill() {
         Character UserObj = User.GetComponent<Character>();
-        UserObj.ActiveSubSkill();
+        if (UserObj.ActiveSubSkill()) {
+            subSkillCollTimeBar.runProgress();
+        };
     }
 
     private void searchEnemy(Transform targetObj, Transform enemyGroup) {

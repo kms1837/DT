@@ -42,12 +42,11 @@ public class StatusBar : MonoBehaviour
         maximum = setValue;
     }
 
-    public void runProgress(float second) {
-        maximum = second;
+    public void runProgress() {
         origin = 0;
         current = 0;
         StopAllCoroutines();
-        StartCoroutine(progress(second));
+        StartCoroutine(progress(maximum));
     }
 
     private IEnumerator progress(float second) {
