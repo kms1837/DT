@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class Hero : Character {
     public int jobClass;
-    public int passive;
-    public int mainSkill;
-    public int sideSkill;
     public bool teamOrder;
 
     public Hero(string setName, int setLevel, int setJobClass, int setPassive,

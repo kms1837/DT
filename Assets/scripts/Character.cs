@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,7 +26,16 @@ public class Character : Ability
 
     Ability[] equipment = new Ability[5]; // 장비
 
-    ArrayList buffList; // 버프, 디버프 리스트
+    public ArrayList buffList; // 버프, 디버프 리스트
+
+    // skill Number
+    public int passive;
+    public int mainSkill;
+    public int sideSkill;
+
+    // Skill Object
+    public Skill mainSkillObj;
+    public Skill subSkillObj;
 
     // ui
     private StatusBar hpBar;
@@ -43,7 +53,7 @@ public class Character : Ability
         direction = 1;
         beforeDelay = 2.0f;
         afterDelay = 2.0f;
-        energyPower = 30;
+        energyPower = 5;
         healthPoint = 100;
         currentHealthPoint = 100;
 
@@ -52,19 +62,25 @@ public class Character : Ability
 
         beforeDelayActionStr = string.Empty;
 
-        hpBar = this.gameObject.AddComponent<StatusBar>();
-        hpBar.init(healthPoint, new Vector2(objPosition.x, objPosition.y - (objRect.height*2)), new Vector2(objRect.width, 20), new Color(255.0f, 0, 0));
+        hpBar = this.gameObject.transform.Find("HpBar").GetComponent<StatusBar>();
+        hpBar.init(healthPoint, new Color(255.0f, 0, 0));
 
-        delayBar = this.gameObject.AddComponent<StatusBar>();
-        delayBar.init(0, new Vector2(objPosition.x, objPosition.y - (objRect.height*2) - 25), new Vector2(objRect.width, 20), new Color(0, 0, 255.0f));
+        delayBar = this.gameObject.transform.Find("DelayBar").GetComponent<StatusBar>();
+        delayBar.init(0, new Color(0, 0, 255.0f));
 
         buffList = new ArrayList();
     }
 
     private void updateUI() {
         Vector2 objPosition = this.transform.position;
-        hpBar.setPosition(new Vector2(objPosition.x, hpBar.position.y));
-        delayBar.setPosition(new Vector2(objPosition.x, delayBar.position.y));
+        //hpBar.setPosition(new Vector2(objPosition.x, hpBar.position.y));
+        //delayBar.setPosition(new Vector2(objPosition.x, delayBar.position.y));
+
+        try { 
+            hpBar.setCurrent(currentHealthPoint);
+        } catch (NullReferenceException err) {
+
+        }
     }
 	
 	void Update () {
@@ -86,7 +102,12 @@ public class Character : Ability
 
         if (range >= distance) {
             Character attchTarget = target.GetComponent<Character>();
-            attchTarget.hit(energyPower);
+            float damage = this.energyPower;
+            foreach(Skill buff in buffList) {
+                damage += buff.energyPower;
+            }
+
+            attchTarget.hit(damage);
             delay(afterDelay, "backStatus");
         }
     }
@@ -111,7 +132,6 @@ public class Character : Ability
         }
 
         currentHealthPoint -= damage;
-        hpBar.setCurrent(currentHealthPoint);
 
         if (currentHealthPoint <= 0) {
             // dead
@@ -149,6 +169,14 @@ public class Character : Ability
         this.gameObject.transform.position = new Vector2(currentPosition.x + (direction * movementSpeed), currentPosition.y);
         
     } // 이동
+
+    public bool ActiveMainSkill() {
+        return mainSkillObj.activation();
+    } // 메인 스킬 발동
+
+    public bool ActiveSubSkill() {
+        return subSkillObj.activation();
+    } // 서브 스킬 발동
 
     public bool aggroCheck(Transform target) {
         Vector2 targetPosition = target.position;

@@ -11,26 +11,42 @@ public class Skill : Ability
     private bool activeFlag; // 스킬 사용 가능 여부
     private Skill buffObj;
 
-    public ArrayList targetBuffList;
-    public ArrayList targetList;
+    public ArrayList targetBuffList = new ArrayList();
+    public ArrayList targetList = new ArrayList();
 
     public enum SkillType { Buff, Magic, Physical, Holy }
 
     public bool activation() {
         if (!activeFlag) {
+            Debug.Log("coolTime: " + coolTime);
             return false;
         }
 
+        activeFlag = false;
+
+        Debug.Log("발동!");
+
         switch (type) {
             case (int)SkillType.Buff:
+                foreach (Character target in targetList) {
+                    Skill newBuff = new Skill();
+                    this.cloneAbility(newBuff);
+                    target.buffList.Add(buffObj);
+
+                    newBuff.Invoke("buffRelease", duration);
+                } // issue!
+
+                /*
                 if (buffObj == null) {
                     buffObj = new Skill();
                     this.cloneAbility(buffObj);
                     targetBuffList.Add(buffObj);
+                    // issue - 버프대상이 많을경우? autoRelease를 만들어야 겠음
                 } else {
                     this.CancelInvoke("buffRelease");
                 }
                 this.Invoke("buffRelease", duration);
+                */
                 break;
 
             case (int)SkillType.Magic:
@@ -47,9 +63,7 @@ public class Skill : Ability
                     target.currentHealthPoint = heal <= target.healthPoint ? heal : target.healthPoint;
                 }
                 break;
-        }
-
-        activeFlag = false;
+        }        
 
         this.Invoke("recycle", coolTime);
 
