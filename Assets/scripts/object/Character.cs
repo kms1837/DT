@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Character : Ability
+public class Character : MonoBehaviour
 {
+    public Ability infomation; // 케릭터 정보
     public int status; // 케릭터 상태
     private int prevStatus; // 전 상태
     public int type; // 케릭터 타입
@@ -14,7 +15,6 @@ public class Character : Ability
     public float currentManaPoint; // MP
 
     public GameObject target; // 공격대상
-
     public int direction; // 방향
 
     public enum CharacterStatus { Normal, Battle, Attack }
@@ -28,11 +28,6 @@ public class Character : Ability
 
     public ArrayList buffList; // 버프, 디버프 리스트
 
-    // skill Number
-    public int passive;
-    public int mainSkill;
-    public int sideSkill;
-
     // Skill Object
     public Skill mainSkillObj;
     public Skill subSkillObj;
@@ -41,29 +36,39 @@ public class Character : Ability
     private StatusBar hpBar;
     private StatusBar delayBar;
 
-    void Start () {
+    public UnityEngine.Events.UnityAction destroyCallback; // 케릭터 사망시 콜백 설정
+
+    void OnDestroy () {
+        if (destroyCallback != null) {
+            destroyCallback();
+        }
+    }
+
+    void Awake () {
         Vector2 objPosition = this.transform.position;
         Rect objRect = this.gameObject.GetComponent<RectTransform>().rect;
+
+        infomation = new Ability();
 
         status = (int)CharacterStatus.Normal;
 
         target = null;
 
-        movementSpeed = 2;
+        infomation.movementSpeed = 2;
         direction = 1;
-        beforeDelay = 2.0f;
-        afterDelay = 2.0f;
-        energyPower = 5;
-        healthPoint = 100;
+        infomation.beforeDelay = 2.0f;
+        infomation.afterDelay = 2.0f;
+        infomation.energyPower = 5;
+        infomation.healthPoint = 100;
         currentHealthPoint = 100;
 
-        aggroRadius = objRect.width + 200;
-        range = objRect.width + 10;
+        infomation.aggroRadius = objRect.width + 200;
+        infomation.range = objRect.width + 10;
 
         beforeDelayActionStr = string.Empty;
 
         hpBar = this.gameObject.transform.Find("HpBar").GetComponent<StatusBar>();
-        hpBar.init(healthPoint, new Color(255.0f, 0, 0));
+        hpBar.init(infomation.healthPoint, new Color(255.0f, 0, 0));
 
         delayBar = this.gameObject.transform.Find("DelayBar").GetComponent<StatusBar>();
         delayBar.init(0, new Color(0, 0, 255.0f));
@@ -105,12 +110,12 @@ public class Character : Ability
         Vector2 currentPosition = this.gameObject.transform.position;
         float distance = Vector2.Distance(target.transform.position, currentPosition);
 
-        if (range >= distance) {
+        if (infomation.range >= distance) {
             Character attchTarget = target.GetComponent<Character>();
-            float damage = this.energyPower;
+            float damage = infomation.energyPower;
 
             foreach(Skill buff in buffList) {
-                damage += buff.energyPower;
+                damage += buff.infomation.energyPower;
             }
 
             foreach (Ability equipment in equipments) {
@@ -118,7 +123,7 @@ public class Character : Ability
             }
 
             attchTarget.hit(damage);
-            delay(afterDelay, "backStatus");
+            delay(infomation.afterDelay, "backStatus");
         }
     }
 
@@ -145,10 +150,13 @@ public class Character : Ability
         currentHealthPoint -= damage;
 
         if (currentHealthPoint <= 0) {
-            // dead
-            Destroy(this.gameObject);
+            dead();            
         }
     } // 공격받음
+
+    private void dead() {
+        Destroy(this.gameObject);
+    }
 
     private void clear() {
         this.gameObject.GetComponent<Image>().color = new Color(255, 255, 255);
@@ -162,22 +170,22 @@ public class Character : Ability
         if (status == (int)CharacterStatus.Battle && target != null) {
             float distance = Vector2.Distance(target.transform.position, currentPosition);
 
-            if (this.range >= distance) {
+            if (this.infomation.range >= distance) {
                 this.prevStatus = status;
                 this.status = (int)CharacterStatus.Attack;
                 beforeDelayActionStr = "attch";
 
-                delayBar.setMaximum(beforeDelay);
-                delay(beforeDelay, beforeDelayActionStr);
+                delayBar.setMaximum(infomation.beforeDelay);
+                delay(infomation.beforeDelay, beforeDelayActionStr);
             }
 
-            if (this.aggroRadius < distance) {
+            if (this.infomation.aggroRadius < distance) {
                 target = null;
                 status = (int)CharacterStatus.Normal;
             } // 어그로 해제
         }
 
-        this.gameObject.transform.position = new Vector2(currentPosition.x + (direction * movementSpeed), currentPosition.y);
+        this.gameObject.transform.position = new Vector2(currentPosition.x + (direction * infomation.movementSpeed), currentPosition.y);
         
     } // 이동
 
@@ -194,7 +202,7 @@ public class Character : Ability
         bool returnData = false;
 
         float distance = Vector2.Distance(targetPosition, this.gameObject.transform.position);
-        if (this.aggroRadius >= distance) {
+        if (this.infomation.aggroRadius >= distance) {
             returnData = true;
         }
 
