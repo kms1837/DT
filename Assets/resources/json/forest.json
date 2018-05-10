@@ -1,0 +1,53 @@
+{
+    "filed": "forest",
+    "regen": [{
+        "monsterList": [1],
+        "cycle": 5, 
+        "produce": 2
+    }],
+    "threat": [
+        {
+            "trigger": [{
+                "type": "hunt",
+                "monsterList": [1],
+                "count": 20
+            }],
+            "result": [
+                {
+                    "type": "produce",
+                    "monsterList": [2],
+                    "produce": 9
+                },
+                {
+                    "type": "produce",
+                    "monsterList": [3],
+                    "produce": 1
+                }
+            ]
+        },
+        {
+            "trigger":[{
+                "type": "hunt",
+                "monsterList": [1],
+                "count": 15
+            }],
+            "result": [{
+                "type": "produce",
+                "monsterList": [4],
+                "produce": 1
+            }]
+        },
+        {
+            "trigger":[{
+                "type": "hunt",
+                "monster": [2],
+                "count": 2
+            }],
+            "result": [{
+                "type": "produce",
+                "monster": [5],
+                "produce": 1
+            }]
+        }
+    ]
+}
