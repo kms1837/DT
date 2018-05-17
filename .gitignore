@@ -10,3 +10,4 @@ backup/
 *.info
 *.sln
 *.csproj
+*.s3db

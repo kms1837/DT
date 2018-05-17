@@ -19,6 +19,8 @@ public class BattleSystem : MonoBehaviour {
     private Score totalScore; // 누적이 되는 상황기록
     private Score localScore; // 갱신이 되는 상황기록
 
+    private DataBase db;
+
     /* 맵 실시간 상황 체크 object ( 현재 맵의 상황만 기록된다. )
      {
        total : {
@@ -43,13 +45,20 @@ public class BattleSystem : MonoBehaviour {
     } // 몬스터를 설정 시간마다 생성함
 
     private void regen(List<int> monsterList) {
+        DataBase db = new DataBase("DT");
         foreach (int monsterNumber in monsterList) {
+            Dictionary<string, object> monsterData = db.getTuple("monster", monsterNumber);
+            // issue - 빈 정보가 오면? 예외처리
             GameObject regenMonster = Instantiate(CharacterObject, EnemyGroup.transform);
-            regenMonster.transform.localPosition = new Vector2(1000, 0);
             Character monsterInfo = regenMonster.GetComponent<Character>();
+            regenMonster.transform.localPosition = new Vector2(1000, 0);
             monsterInfo.direction = -1;
 
             monsterInfo.infomation.movementSpeed = 1.0f;
+            monsterInfo.infomation.healthPoint = (float)monsterData["hp"];
+
+            Debug.Log(string.Format("regen [{0}]: (hp: {1}, )", (string)monsterData["name"], (float)monsterData["hp"]));
+
             monsterInfo.destroyCallback = (() => {
                 if (localScore.killPoint.ContainsKey(monsterNumber)) {
                     totalScore.killPoint[monsterNumber] += 1;
