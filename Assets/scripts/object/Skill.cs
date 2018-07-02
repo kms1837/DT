@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Skill : Ability
+public class Skill :MonoBehaviour
 {
+    public Ability infomation;
     public int type; // 스킬 타입
     public float duration; // 스킬 지속 시간
     public float coolTime; // 스킬 재사용 대기시간
@@ -30,7 +31,7 @@ public class Skill : Ability
             case (int)SkillType.Buff:
                 foreach (Character target in targetList) {
                     Skill newBuff = new Skill();
-                    this.cloneAbility(newBuff);
+                    this.infomation.cloneAbility(newBuff.infomation);
                     target.buffList.Add(buffObj);
 
                     newBuff.Invoke("buffRelease", duration);
@@ -59,8 +60,8 @@ public class Skill : Ability
 
             case (int)SkillType.Holy:
                 foreach(Character target in targetList) {
-                    float heal = target.currentHealthPoint + this.healthPoint;
-                    target.currentHealthPoint = heal <= target.healthPoint ? heal : target.healthPoint;
+                    float heal = target.currentHealthPoint + this.infomation.healthPoint;
+                    target.currentHealthPoint = heal <= target.infomation.healthPoint ? heal : target.infomation.healthPoint;
                 }
                 break;
         }        
@@ -78,6 +79,10 @@ public class Skill : Ability
         targetBuffList.Remove(buffObj);
         buffObj = null;
     } // 버프를 해제합니다.
+
+    private void Awake() {
+        infomation = new Ability();
+    }
 
     private void Start () {
         buffObj = null;

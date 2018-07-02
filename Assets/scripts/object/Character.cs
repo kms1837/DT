@@ -17,8 +17,8 @@ public class Character : MonoBehaviour
     public GameObject target; // 공격대상
     public int direction; // 방향
 
-    public enum CharacterStatus { Normal, Battle, Attack }
-    // 평상시, 전투모드, 공격중
+    public enum CharacterStatus { Normal, Battle, Attack, Control, Wait }
+    // 평상시, 전투모드, 공격중, 조작중, 대기중
 
     public enum CharacterType { Hero, NPC, Monster, Boss }
 
@@ -83,8 +83,6 @@ public class Character : MonoBehaviour
 
     private void updateUI() {
         Vector2 objPosition = this.transform.position;
-        //hpBar.setPosition(new Vector2(objPosition.x, hpBar.position.y));
-        //delayBar.setPosition(new Vector2(objPosition.x, delayBar.position.y));
 
         try { 
             hpBar.setCurrent(currentHealthPoint);
@@ -165,7 +163,7 @@ public class Character : MonoBehaviour
     public void move() {
         Vector2 currentPosition = this.gameObject.transform.position;
 
-        status = target == null ? (int)CharacterStatus.Normal : status;
+        status = (target == null && status != (int)CharacterStatus.Control) ? (int)CharacterStatus.Normal : status;
 
         if (status == (int)CharacterStatus.Battle && target != null) {
             float distance = Vector2.Distance(target.transform.position, currentPosition);

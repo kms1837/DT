@@ -5,6 +5,8 @@ using UnityEngine;
 [System.Serializable]
 public struct threat
 {
+    public string title;
+    public string desc;
     public List<mapNode> trigger;
     public List<mapNode> result;
 }

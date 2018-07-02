@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Ability {
+public class Ability
+{
+    public int id; // 케릭터 id
     public string nameStr; // 이름(닉네임)
 
     public int level;
@@ -11,8 +13,9 @@ public class Ability {
 
     /* total ability */
     public float healthPoint; // HP
-    public float dp; // ??
     public float manaPoint; // MP
+
+    public float dp; // ??
 
     public float beforeDelay; // 선딜레이
     public float afterDelay; // 후딜레이
@@ -46,6 +49,7 @@ public class Ability {
 
         cloneObj.level = this.level;
         cloneObj.healthPoint = this.healthPoint;
+
         cloneObj.manaPoint = this.manaPoint;
 
         cloneObj.energyPower = this.energyPower;
