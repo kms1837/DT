@@ -1,0 +1,22 @@
+create table users (
+	id INTEGER NOT NULL Primary Key AUTOINCREMENT,
+    name VARCHAR, 
+    level INT,
+    job_class INT,
+    hp FLOAT,
+    mp FLOAT,
+    dp FLOAT,
+    defore_delay FLOAT,
+    after_delay FLOAT,
+    attack_speed FLOAT,
+    movement_speed FLOAT,
+    range FLOAT,
+    energy_power FLOAT,
+    magic_power FLOAT,
+    health_power FLOAT,
+    holy_power FLOAT,
+    skill1 INT,
+    skill2 INT,
+    skill3 INT,
+    skill4 INT
+);

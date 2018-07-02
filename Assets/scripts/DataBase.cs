@@ -22,53 +22,24 @@ public class DataBase {
         dbcmd = database.CreateCommand();
     }
 
+    private string readerSQLFile(string fileName) {
+        string filePath = string.Format("schema/{0}", fileName);
+        TextAsset readFileStr = Resources.Load(filePath, typeof(TextAsset)) as TextAsset;
+
+        return readFileStr.text;
+    }
+
     public void initDataBase() {
         string sql = "DROP DATABASE DT";
         query(sql);
-
-        sql = "create table monster (" +
-                "id INTEGER NOT NULL Primary Key AUTOINCREMENT, " +
-                "name VARCHAR, " +
-                "description VARCHAR, " +
-                "hp FLOAT, " +
-                "dp FLOAT, " +
-                "defore_delay FLOAT, " +
-                "after_delay FLOAT, " +
-                "range FLOAT, " +
-                "power FLOAT, " +
-                "skill1 INT, " +
-                "skill2 INT, " +
-                "skill3	INT, " +
-                "skill4 INT" +
-                ")";
-
+        
+        sql = readerSQLFile("users");
         query(sql);
-
-        query("INSERT INTO monster VALUES(1, '늑대', '늑대다', 180, 0, 0.5, 0.5, 10, 20, 0, 0, 0, 0)");
-        query("INSERT INTO monster VALUES(2, '어린 늑대', '어린 늑대', 100, 0, 0.5, 0.5, 10, 10, 0, 0, 0, 0)");
-        query("INSERT INTO monster VALUES(3, '어미 늑대', '어미 늑대', 300, 0, 0.5, 0.5, 10, 20, 0, 0, 0, 0)");
-        query("INSERT INTO monster VALUES(4, '늑대 우두머리', '늑대 우두머리', 1000, 0, 0.5, 0.5, 10, 40, 0, 0, 0, 0)");
-        query("INSERT INTO monster VALUES(5, '늑대왕', '늑대들의 왕', 1000, 0, 0.5, 0.5, 10, 60, 0, 0, 0, 0)");
-
+        sql = readerSQLFile("skills");
         query(sql);
-
-        sql = "create table skill (" +
-            "id INTEGER NOT NULL Primary Key AUTOINCREMENT, " +
-            "name VARCHAR, " +
-            "description VARCHAR, " +
-            "before_delay FLOAT, " +
-            "after_delay FLOAT, " +
-            "range FLOAT, " +
-            "power FLOAT, " +
-            "cool_time FLOAT, " +
-            "effect VARCHAR, " +
-            "script VARCHAR " +
-            ")";
-
+        sql = readerSQLFile("monsters");
         query(sql);
-
-        sql = "INSERT INTO skill VALUES(1, '회복', '대상 1초마다 10회 치유', 0.1, 0.9, 3, 10, 60, '', '')";
-
+        sql = readerSQLFile("sample");
         query(sql);
 
         dbcmd.Dispose();
