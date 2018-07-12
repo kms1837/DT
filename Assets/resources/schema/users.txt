@@ -1,4 +1,4 @@
-create table users (
+CREATE TABLE users (
 	id INTEGER NOT NULL Primary Key AUTOINCREMENT,
     name VARCHAR, 
     level INT,
@@ -20,3 +20,9 @@ create table users (
     skill3 INT,
     skill4 INT
 );
+
+INSERT INTO users VALUES(1, "케릭터1", 1, 1, 180, 100, 0, 0.5, 0.5, 0.1, 0.1, 10, 20, 10, 10, 10, 0, 0, 0, 0);
+INSERT INTO users VALUES(2, "케릭터2", 1, 1, 180, 100, 0, 0.5, 0.5, 0.1, 0.1, 10, 20, 10, 10, 10, 0, 0, 0, 0);
+INSERT INTO users VALUES(3, "케릭터3", 1, 1, 180, 100, 0, 0.5, 0.5, 0.1, 0.1, 10, 20, 10, 10, 10, 0, 0, 0, 0);
+INSERT INTO users VALUES(4, "케릭터4", 1, 1, 180, 100, 0, 0.5, 0.5, 0.1, 0.1, 10, 20, 10, 10, 10, 0, 0, 0, 0);
+INSERT INTO users VALUES(5, "케릭터5", 1, 1, 180, 100, 0, 0.5, 0.5, 0.1, 0.1, 10, 20, 10, 10, 10, 0, 0, 0, 0);

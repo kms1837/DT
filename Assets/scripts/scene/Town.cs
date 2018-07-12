@@ -128,7 +128,6 @@ public class Town : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHand
 
         if (scrollRect.movementType == ScrollRect.MovementType.Clamped) {
             ScrollObject.transform.localPosition = targetPosition;
-            Debug.Log(moveFlag);
         }
     }
 }

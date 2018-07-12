@@ -74,6 +74,12 @@ public class Ability
         healthPoint = 0; // HP
         manaPoint = 0; // MP
 
+        jobClass = 1;
+
+        passive = 1;
+        mainSkill = 1;
+        sideSkill = 1;
+
         energyPower = 0; // 기력
         magicPower = 0; // 마력
         healthPower = 0; // 체력

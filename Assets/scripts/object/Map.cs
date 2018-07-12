@@ -3,30 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public struct threat
-{
-    public string title;
-    public string desc;
-    public List<mapNode> trigger;
-    public List<mapNode> result;
-}
-
-[System.Serializable]
-public class mapNode
-{
-    public string type;
-    public List<int> monsterList;
-    public int count;
-    public float cycle;
-    public int produce;
-}
-
-[System.Serializable]
 public class Map
 {
+    [System.Serializable]
+    public struct threatNode
+    {
+        public string title;
+        public string desc;
+        public List<mapNode> trigger;
+        public List<mapNode> result;
+    }
+
+    [System.Serializable]
+    public class mapNode
+    {
+        public string type;
+        public List<int> monsterList;
+        public int count;
+        public float cycle;
+        public int produce;
+    }
+
     public string filed;
     public List<mapNode> regen;
-    public List<threat> threat;
+    public List<threatNode> threat;
 
     public static Map loadMap(string fileName) {
         Map loadedMap = null;

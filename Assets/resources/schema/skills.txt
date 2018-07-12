@@ -1,4 +1,4 @@
-create table skills (
+CREATE TABLE skills (
     id INTEGER NOT NULL Primary Key AUTOINCREMENT,
     name VARCHAR,
     description VARCHAR,
@@ -7,6 +7,17 @@ create table skills (
     range FLOAT,
     power FLOAT,
     cool_time FLOAT,
-    effect FLOAT,
+    effect VARCHAR,
+    icon VARCHAR,
     script VARCHAR
 );
+
+INSERT INTO skills VALUES(1, "회복", "대상 1초마다 10회 치유", 0.1, 0.9, 3, 10, 60, "", "img/skill", "");
+INSERT INTO skills VALUES(2, "치유의 안개", "아군 전체 치유", 0, 0, 0, 2, 10, "", "img/skill","");
+INSERT INTO skills VALUES(3, "기습", "3초간 공격속도 100% 증가", 0, 0, 0, 0, 30, "", "img/skill","");
+INSERT INTO skills VALUES(4, "후리기", "대상 강한 공격", 0, 0, 0, 2, 5, "", "img/skill","");
+INSERT INTO skills VALUES(5, "충격파", "대상을 강하게 공격하며 3초간 스턴을 입힌다.", 0, 0, 0, 3, 20, "", "img/skill","");
+INSERT INTO skills VALUES(6, "화염구", "대상에게 강한 화염 공격", 0, 0, 0, 3, 10, "", "img/skill","");
+INSERT INTO skills VALUES(7, "포효", "10초간 공격력 10% 증가", 0, 0, 0, 0, 60, "", "img/skill","");
+INSERT INTO skills VALUES(8, "속사", "3초간 기본공격 후딜레이 제거", 0, 0, 0, 0, 30, "", "img/skill","");
+INSERT INTO skills VALUES(9, "폭발탄", "광역 공격", 0, 0, 0, 2, 10, "", "img/skill","");

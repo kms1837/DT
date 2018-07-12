@@ -1,0 +1,11 @@
+CREATE TABLE threats (
+    id INTEGER NOT NULL Primary Key AUTOINCREMENT,
+    name VARCHAR,
+    description VARCHAR,
+    file VARCHAR
+);
+
+INSERT INTO threats VALUES(1, "늑대왕", "레벨 1권장", "wolfking");
+INSERT INTO threats VALUES(2, "거대곰", "정말 거대한 곰입니다.", "wolfking");
+INSERT INTO threats VALUES(3, "등등", "cxv", "wolfking");
+INSERT INTO threats VALUES(4, "이것", "qwe zxc", "wolfking");

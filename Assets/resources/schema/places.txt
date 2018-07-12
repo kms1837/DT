@@ -1,0 +1,8 @@
+CREATE TABLE places (
+    id INTEGER NOT NULL Primary Key AUTOINCREMENT,
+    name VARCHAR
+);
+
+INSERT INTO places VALUES(1, "A숲");
+INSERT INTO places VALUES(2, "B숲");
+INSERT INTO places VALUES(3, "C숲");

@@ -1,9 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 using System.Data;
 using Mono.Data.Sqlite;
+
+using tupleType = System.Collections.Generic.Dictionary<string, object>;
 
 public class DataBase {
     private IDbConnection database = null;
@@ -30,16 +31,19 @@ public class DataBase {
     }
 
     public void initDataBase() {
-        string sql = "DROP DATABASE DT";
-        query(sql);
-        
+        string sql;
+
         sql = readerSQLFile("users");
         query(sql);
         sql = readerSQLFile("skills");
         query(sql);
         sql = readerSQLFile("monsters");
         query(sql);
-        sql = readerSQLFile("sample");
+        sql = readerSQLFile("jobclass");
+        query(sql);
+        sql = readerSQLFile("places");
+        query(sql);
+        sql = readerSQLFile("threats");
         query(sql);
 
         dbcmd.Dispose();
@@ -53,6 +57,7 @@ public class DataBase {
         catch (System.Exception err) {
             Debug.LogWarning(err);
         }
+
     }
 
     private IDataReader readQuery(string queryStr) {
@@ -69,15 +74,63 @@ public class DataBase {
         return reader;
     }
 
+    public Dictionary<int, tupleType> getList (string table) {
+        Dictionary<int, Dictionary<string, object>> list =  getList(table, "");
+        return list;
+    }
+
+    public Dictionary<int, tupleType> getList(string table, string parm) {
+        Dictionary<int, Dictionary<string, object>> list = new Dictionary<int, tupleType>();
+
+        try {
+            IDataReader reader = readQuery(string.Format("SELECT * FROM {0} {1}", table, parm));
+            Dictionary<string, object> tuple;
+
+            while (reader.Read()) {
+                tuple = getTupleNode(reader);
+                list.Add((int)tuple["id"], tuple);
+            }
+        }
+        catch (System.Exception error) {
+            Debug.LogWarning(string.Format("[query error from {0}]", table));
+            Debug.LogWarning(error);
+            dbcmd.Dispose();
+            return null;
+        }
+
+        dbcmd.Dispose();
+        return list;
+    }
+
     public Dictionary<string, object> getTuple (string table, int id) {
-        IDataReader reader = readQuery(string.Format("SELECT * FROM {0} WHERE id = {1}", table, id));
         Dictionary<string, object> tuple = new Dictionary<string, object>();
 
-        while (reader.Read()) {
-            for (int index=0; index<reader.FieldCount; index++) {
-                string fieldName = reader.GetName(index);
-                string dataType = reader.GetDataTypeName(index);
-                object data = null;
+        try {
+            IDataReader reader = readQuery(string.Format("SELECT * FROM {0} WHERE id = {1}", table, id));
+            while (reader.Read()) {
+                getTupleNode(reader);
+            }
+        }
+        catch (System.Exception error) {
+            Debug.LogWarning(string.Format("[query error from {0} {1}]", table, id));
+            Debug.LogWarning(error);
+            dbcmd.Dispose();
+            return null;
+        }
+
+        dbcmd.Dispose();
+        return tuple;
+    }
+
+    private Dictionary<string, object> getTupleNode(IDataReader reader) {
+        Dictionary<string, object> tuple = new Dictionary<string, object>();
+
+        for (int index = 0; index < reader.FieldCount; index++) {
+            string fieldName = reader.GetName(index);
+            string dataType = reader.GetDataTypeName(index);
+            object data = null;
+
+            try {
                 switch (dataType) {
                     case "INT":
                     case "INTEGER":
@@ -90,12 +143,16 @@ public class DataBase {
                         data = reader.GetFloat(index);
                         break;
                 }
-                
+
                 tuple.Add(fieldName, data);
             }
+            catch(System.Exception error) {
+                Debug.LogWarning("[" + dataType + "]");
+                Debug.LogWarning(error);
+            }
+            
         }
 
-        // issue - 빈 튜플이 올경우 처리
         return tuple;
     }
 

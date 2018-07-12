@@ -6,6 +6,9 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
+using tupleType = System.Collections.Generic.Dictionary<string, object>;
+
+
 public class QuestBoard : MonoBehaviour
 {
     public GameObject BottomView;
@@ -22,6 +25,14 @@ public class QuestBoard : MonoBehaviour
     // 파티 로비 정보(복제용)
     public GameObject UserPanel;
 
+    [System.Serializable]
+    private struct QuestBoardData
+    {
+        public string[] setNames;
+        public string[] golaList;
+        public string[] skillSpecNameList;
+    }
+
     private int currentUI; // 현재 UI 상태
     private int prevUI; // 이전 UI 상태
 
@@ -34,28 +45,11 @@ public class QuestBoard : MonoBehaviour
 
     // 항목당 리스트(임시)
     private Dictionary<string, object> room = new Dictionary<string, object>();
-    private ArrayList dummy;
-    private string[] dummySetName = new string[] { "목적지", "목표", "수렵", "스킬선택" };
-    private string[] dummyPlaceList = new string[] { "A숲", "B숲", "C숲", "D숲", "E숲", "F숲", "G숲" };
-    private string[] dummyGolaList = new string[] { "수렵", "채집", "횡단", "탐험" };
 
-    // 추후 통합
-    private string[] dummyMonsterList = new string[] { "늑대왕", "거대곰", "등등", "이것" };
-    private string[] dummyMonsterInfoList = new string[] { "lv1권장", "정말 거대한 곰입니다.", "테스트", "test" };
-    //
-
-    private string[] dummyUserNameList = new string[]
-    {
-        "kms1994", "skm1994", "Flora", "트타귀욤",
-        "abcde", "1q2w3e4r", "끼에엑", "드렁쿡",
-        "이에이에", "엄마손파이", "쁏", "지갑",
-        "내돈은요", "내삶어디", "배고파요", "그래서요",
-        "어쩌라고", "딜전", "탱전", "진짜요"
-    };
-
-    private string[] dummyJobClassNameList = new string[] { "전사", "사제", "도적", "마법사" };
-    private string[] dummySkillSpecNameList = new string[] { "강한 범위 공격", "강한 단일 공격", "단일 메즈", "범위 메즈", "순간 회복", "피해 감소" };
-    private string[] dummySkillNameList = new string[] { "강타", "버티기", "치유 장막", "순간 치유", "독폭", "연막", "눈보라", "화염구" };
+    Dictionary<int, tupleType> threatList;
+    Dictionary<int, tupleType> placeList;
+    Dictionary<int, tupleType> jobClassList;
+    Dictionary<int, tupleType> skillList;
 
     private Ability mySpec; // 샘플 유저(자신)
     private ArrayList dummyUsers; // 샘플 유저들
@@ -75,25 +69,37 @@ public class QuestBoard : MonoBehaviour
     private const int MaxUser = 4;
     private const string UserPanelGrupName = "UserList";
 
+    private DataBase db;
+    private QuestBoardData uiData;
+
     void Start() {
         // issue - UI별로 script분리 필요
-
+        loadQuestBoardData("json/quest_board");
         currentUI = (int)UIStatus.Main;
         prevUI = (int)UIStatus.Main;
         homeBtnAction();
 
         room.Add("Skill", new ArrayList()); // skills
-
-        dummy = new ArrayList() { dummyPlaceList, dummyGolaList, dummyMonsterList, dummySkillSpecNameList };
+        
         userList = new ArrayList();
 
+        db = new DataBase("DT");
+
+        threatList = db.getList("threats");
+        placeList = db.getList("places");
+        skillList = db.getList("skills");
+        jobClassList = db.getList("jobclass");
+
         userSkillList = new ArrayList();
-        for (int i = 0; i < dummySkillSpecNameList.Length; i++) {
+        for (int i = 0; i < uiData.skillSpecNameList.Length; i++) {
             userSkillList.Add(i);
+            //(string)skillList[i + 1]["name"]
         }
 
         mySpec = new Ability();
         mySpec.nameStr = "주인공";
+        mySpec.jobClass = 1;
+        mySpec.mainSkill = 2;
         room.Add("OrderUser", mySpec);
 
         dummyUsers = new ArrayList();
@@ -103,28 +109,16 @@ public class QuestBoard : MonoBehaviour
         dummyUsers.Add(new Ability());
 
         recruitmentFlag = false;
-        /*
-         {
-            title: "목적",
-            key: "Place",
-            items: []
-         }
-
-         {
-            target: "늑대왕",
-            level: 1
-         }
-
-         {
-            name: "순간 회복",
-            icon: "img/healing",
-         }
-         */
     }
 
-    // Update is called once per frame
-    void Update() {
-
+    private void loadQuestBoardData(string fileName) {
+        try {
+            TextAsset jsonText = Resources.Load(fileName) as TextAsset;
+            uiData = JsonUtility.FromJson<QuestBoardData>(jsonText.text);
+        }
+        catch (System.Exception error) {
+            Debug.LogError(error);
+        }
     }
 
     private void changeUI() {
@@ -155,6 +149,9 @@ public class QuestBoard : MonoBehaviour
         Ability user = dummyUsers[userList.Count] as Ability;
         userList.Add(dummyUsers[userList.Count]);
 
+        string jobClassName = (string)jobClassList[user.jobClass]["name"];
+        string mainSkillName = (string)skillList[user.mainSkill]["name"];
+
         displayPanel.GetChild(0).gameObject.SetActive(false);
         displayInfo.gameObject.SetActive(true);
 
@@ -163,15 +160,16 @@ public class QuestBoard : MonoBehaviour
         Text levelLabel = displayInfo.Find("LevelLabel").GetComponent<Text>();
         Text mainSkillLabel = displayInfo.Find("MainSkillIcon").GetChild(1).GetComponent<Text>();
         Button detailButton = displayInfo.Find("DetailBtn").GetComponent<Button>();
-
+        
         nameLabel.text = user.nameStr;
         levelLabel.text = string.Format("Lv.{0}", user.level);
-        jobClassLabel.text = dummyJobClassNameList[user.jobClass];
-        mainSkillLabel.text = dummySkillNameList[user.mainSkill];
+        jobClassLabel.text = jobClassName;
+        mainSkillLabel.text = mainSkillName;
+
         detailButton.onClick.AddListener(() => {
             Popup popupObj =  Popup.GetComponent<Popup>();
 
-            string userMsg = string.Format("Lv. {0} - {1}\n메인스킬: {2}", user.level, dummyJobClassNameList[user.jobClass], dummySkillNameList[user.mainSkill]);
+            string userMsg = string.Format("Lv. {0} - {1}\n메인스킬: {2}", user.level, jobClassName, mainSkillName);
             userMsg += (Ability)room["OrderUser"] == user ? "\n지휘자" : "\n파티원";
 
             popupObj.show(
@@ -206,22 +204,22 @@ public class QuestBoard : MonoBehaviour
         Text targetLabel = RoomUI.transform.Find("TargetLabel").GetComponent<Text>();
 
         placeLabel.text = String.Format("{0} - {1}",
-            dummyPlaceList[(int)room["Place"]],
-            dummyGolaList[(int)room["Gola"]]);
-
-        targetLabel.text = dummyMonsterList[(int)room["Monster"]];
-
+            (string)placeList[(int)room["Place"] + 1]["name"],
+            uiData.golaList[(int)room["Gola"]]);
+        
+        targetLabel.text = (string)threatList[(int)room["Monster"]]["name"];
+        
         Transform mySpecUI = RoomUI.transform.Find("MySpec");
         Text nameLabel = mySpecUI.Find("NameLabel").GetComponent<Text>();
         Text jobClassLabel = mySpecUI.Find("JobClassLabel").GetComponent<Text>();
         Text levelLabel = mySpecUI.Find("LevelLabel").GetComponent<Text>();
         Text mainSkillLabel = mySpecUI.Find("MainSkillIcon").GetChild(1).GetComponent<Text>();
-
+        
         nameLabel.text = mySpec.nameStr;
-        jobClassLabel.text = dummyJobClassNameList[mySpec.jobClass];
+        jobClassLabel.text = (string)jobClassList[mySpec.jobClass]["name"];
         levelLabel.text = string.Format("Lv.{0}", mySpec.level);
-        mainSkillLabel.text = dummySkillNameList[mySpec.mainSkill];
-
+        mainSkillLabel.text = (string)skillList[mySpec.mainSkill]["name"];
+        
         Rect panelRect = UserPanel.transform.GetComponent<RectTransform>().rect;
         float groupHeight = (panelRect.height + ButtonMargin) * MaxUser;
         float top = (groupHeight / 2) - (panelRect.height / 2);
@@ -267,12 +265,12 @@ public class QuestBoard : MonoBehaviour
                 Destroy(group.gameObject);
                 setSkills.Clear();
             } else {
-                partySelectBtnBatch(dummy[currentStatus] as string[]);
+                partySelectBtnBatch(getStatusToBtnNameList(currentStatus));
             }
         }
 
         string key = Enum.GetName(typeof(CreateStatus), currentStatus);
-        titleLabel.text = (currentStatus == (int)CreateStatus.Monster) ? dummyGolaList[(int)room[key]] : dummySetName[currentStatus];
+        titleLabel.text = (currentStatus == (int)CreateStatus.Monster) ? uiData.golaList[(int)room[key]] : uiData.setNames[currentStatus];
     }
 
     public void partySkillSelectBtnAction(int selectNum) {
@@ -287,7 +285,7 @@ public class QuestBoard : MonoBehaviour
                     setSkills.Add(selectNum);
 
                     foreach (int skillNum in setSkills) {
-                        string skillName = dummySkillSpecNameList[skillNum];
+                        string skillName = uiData.skillSpecNameList[skillNum];
                         skillListLabel.text += skillName + " ";
                     }
                 }
@@ -309,10 +307,12 @@ public class QuestBoard : MonoBehaviour
         
         switch (currentStatus) {
             case (int)CreateStatus.Monster:
+                selectNum = selectNum + 1;
+
                 if (!Popup.activeSelf) {
                     popupObject.show(
-                        dummyMonsterList[selectNum], 
-                        dummyMonsterInfoList[selectNum],
+                        (string)threatList[selectNum]["name"],
+                        (string)threatList[selectNum]["description"],
                         () => { partySelectBtnAction(0); },
                         partyBackBtnAction
                     );
@@ -345,13 +345,41 @@ public class QuestBoard : MonoBehaviour
                 break;
             default:
                 string key = Enum.GetName(typeof(CreateStatus), currentStatus);
+                string[] btnNames;
                 room[key] = selectNum;
-                titleLabel.text = (currentStatus == (int)CreateStatus.Gola) ? dummyGolaList[selectNum] : dummySetName[currentStatus + 1];
+                titleLabel.text = (currentStatus == (int)CreateStatus.Gola) ? uiData.golaList[selectNum] : uiData.setNames[currentStatus + 1];
                 currentStatus++;
                 currentStatus = currentStatus % (Enum.GetNames(typeof(CreateStatus)).Length); // overflow 방지
-                partySelectBtnBatch(dummy[currentStatus] as string[]);
+                btnNames = getStatusToBtnNameList(currentStatus);
+                partySelectBtnBatch(btnNames);
                 break;
         }
+    }
+
+    private string[] getStatusToBtnNameList(int currentNum) {
+        string[] nameList = null;
+        switch (currentNum) {
+            case (int)CreateStatus.Gola:
+                nameList = uiData.golaList;
+                break;
+            case (int)CreateStatus.Monster:
+                nameList = tupleToNameList(threatList);
+                break;
+        }
+
+        return nameList;
+    }
+
+    private string[] tupleToNameList(Dictionary<int, tupleType> tuple) {
+        string[] nameList = new string[tuple.Count];
+
+        int index = 0;
+        foreach (KeyValuePair<int, tupleType> data in tuple) {
+            nameList[index] = (string)data.Value["name"];
+            index++;
+        }
+
+        return nameList;
     }
 
     private void partySkillBtnBatch(string groupName, int[] btnNames, Vector2 basePosition) {
@@ -382,7 +410,7 @@ public class QuestBoard : MonoBehaviour
         int count = 0;
         foreach (int nameKey in btnNames) {
             Transform selectBtn = Instantiate(SkillSelectButton).transform;
-            selectBtn.GetChild(0).GetComponent<Text>().text = dummySkillSpecNameList[nameKey];
+            selectBtn.GetChild(0).GetComponent<Text>().text = uiData.skillSpecNameList[nameKey];
             selectBtn.SetParent(groupContent, false);
             selectBtn.localPosition = new Vector2(left, 0);
 
@@ -408,7 +436,7 @@ public class QuestBoard : MonoBehaviour
             CreateUI.transform);
 
         float leftStandard = -(groupWidth / 2) + (btnRect.width/2);
-        float newLinePoint = (groupWidth / 2) - (btnRect.width / 2); //viewRect.width - leftStandard;
+        float newLinePoint = (groupWidth / 2) - (btnRect.width / 2); // viewRect.width - leftStandard;
 
         float left = leftStandard;
         float top = 0;
@@ -439,7 +467,9 @@ public class QuestBoard : MonoBehaviour
         CreateUI.SetActive(true);
         currentUI = (int)UIStatus.Create;
 
-        partySelectBtnBatch(dummy[0] as string[]);
+        string[] placeNameList = tupleToNameList(placeList);
+
+        partySelectBtnBatch(placeNameList);
         currentStatus = (int)CreateStatus.Place;
     }
 

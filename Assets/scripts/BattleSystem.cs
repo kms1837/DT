@@ -14,6 +14,7 @@ public class BattleSystem : MonoBehaviour {
     public GameObject CharacterObject; // 복제 오브젝트
 
     public GameObject BottomView;
+    public Transform InfomationGroup;
 
     private StatusBar mainSkillCollTimeBar;
     private StatusBar subSkillCollTimeBar;
@@ -26,23 +27,7 @@ public class BattleSystem : MonoBehaviour {
 
     private DataBase db;
 
-    /* 맵 실시간 상황 체크 object ( 현재 맵의 상황만 기록된다. )
-     {
-       total : {
-           kill : {
-               "monsterNumber" : 0
-           }
-       } // 계속 누적만 된다.
-
-       current : {
-           kill : { 
-               "monsterNumber" : 0 
-           } // 몬스터 사냥 정보
-       } // event용으로 사용되며 사용에 따라 갱신될 수 있다.
-     }
-    */
-
-    IEnumerator regenCycle(mapNode regenInfo) {
+    IEnumerator regenCycle(Map.mapNode regenInfo) {
         while (true) {
             regen(regenInfo.monsterList);
             yield return new WaitForSeconds(regenInfo.cycle);
@@ -95,12 +80,12 @@ public class BattleSystem : MonoBehaviour {
     } // 몬스터 생성
 
     private void runRegen() {
-        foreach (mapNode regenObj in map.regen) {
+        foreach (Map.mapNode regenObj in map.regen) {
             StartCoroutine(regenCycle(regenObj));
         }
     } // 몬스터를 일정시간마다 생성시키는것을 시작함
 
-    private bool triggerCheck(mapNode trigerObj, Score threatScore) {
+    private bool triggerCheck(Map.mapNode trigerObj, Score threatScore) {
         bool trigger = false;
         switch (trigerObj.type) {
             case "hunt":
@@ -130,11 +115,11 @@ public class BattleSystem : MonoBehaviour {
         bool currentTriger = true;
         Score currentThreatScore;
         int index = 0;
-        foreach (threat threatObj in map.threat) {
+        foreach (Map.threatNode threatObj in map.threat) {
             ThreatLabel.text += "\n[" + threatObj.title + "]\n";
             currentThreatScore = (Score)threatScore[index];
 
-            foreach (mapNode trigerObj in threatObj.trigger) {
+            foreach (Map.mapNode trigerObj in threatObj.trigger) {
                 currentTriger = triggerCheck(trigerObj, currentThreatScore);
                 trigger = trigger && currentTriger;
             }
@@ -142,14 +127,14 @@ public class BattleSystem : MonoBehaviour {
             if (trigger) {
                 Debug.Log("["+ threatObj.title + "위협발생" + "]");
 
-                foreach(mapNode trigerObj in threatObj.trigger) {
+                foreach(Map.mapNode trigerObj in threatObj.trigger) {
                     foreach (int monsterNum in trigerObj.monsterList) {
                         currentThreatScore.killPoint[monsterNum] = 0;
                     }
                     // 위협 초기화
                 }
 
-                foreach (mapNode resultObj in threatObj.result) {
+                foreach (Map.mapNode resultObj in threatObj.result) {
                     switch (resultObj.type) {
                         case "produce":
                             foreach (int monster in resultObj.monsterList) {
@@ -170,6 +155,11 @@ public class BattleSystem : MonoBehaviour {
 
 
     void Start () {
+        // battle infomation display
+        Text PlaceLabel = InfomationGroup.Find("PlaceLabel").GetComponent<Text>();
+        Text TargetLabel = InfomationGroup.Find("TargetLabel").GetComponent<Text>();
+        Text ThreatLabel = InfomationGroup.Find("ThreatLabel").GetComponent<Text>();
+
         map = Map.loadMap("json/forest");
         runRegen(); // 설정한 대로 몬스터들을 재 매 설정 시간마다 몬스터를 생성시킵니다.
 
