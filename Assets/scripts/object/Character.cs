@@ -33,8 +33,8 @@ public class Character : MonoBehaviour
     public Skill subSkillObj;
 
     // ui
-    private StatusBar hpBar;
-    private StatusBar delayBar;
+    public ArrayList hpBar; // hpbar ui 목록
+    public ArrayList delayBar; // hpbar ui 목록
 
     public UnityEngine.Events.UnityAction destroyCallback; // 케릭터 사망시 콜백 설정
 
@@ -53,7 +53,8 @@ public class Character : MonoBehaviour
         status = (int)CharacterStatus.Normal;
 
         target = null;
-
+        
+        // base setting
         infomation.movementSpeed = 2;
         direction = 1;
         infomation.beforeDelay = 2.0f;
@@ -64,14 +65,12 @@ public class Character : MonoBehaviour
 
         infomation.aggroRadius = objRect.width + 200;
         infomation.range = objRect.width + 10;
+        
 
         beforeDelayActionStr = string.Empty;
 
-        hpBar = this.gameObject.transform.Find("HpBar").GetComponent<StatusBar>();
-        hpBar.init(infomation.healthPoint, new Color(255.0f, 0, 0));
-
-        delayBar = this.gameObject.transform.Find("DelayBar").GetComponent<StatusBar>();
-        delayBar.init(0, new Color(0, 0, 255.0f));
+        hpBar = new ArrayList();
+        delayBar = new ArrayList();
 
         buffList = new ArrayList();
         equipments = new Ability[5];
@@ -84,8 +83,10 @@ public class Character : MonoBehaviour
     private void updateUI() {
         Vector2 objPosition = this.transform.position;
 
-        try { 
-            hpBar.setCurrent(currentHealthPoint);
+        try {
+            foreach(StatusBar bar in hpBar) {
+                bar.setCurrent(currentHealthPoint);
+            }
         } catch (NullReferenceException err) {
 
         }
@@ -130,8 +131,11 @@ public class Character : MonoBehaviour
     } // 이전상태로 돌아감
 
     private void delay(float time, string callBack) {
-        delayBar.setMaximum(time);
-        delayBar.runProgress();
+        foreach (StatusBar bar in delayBar) {
+            bar.setMaximum(time);
+            bar.runProgress();
+        }
+        
         Invoke(callBack, time);
     }
 
@@ -173,7 +177,9 @@ public class Character : MonoBehaviour
                 this.status = (int)CharacterStatus.Attack;
                 beforeDelayActionStr = "attch";
 
-                delayBar.setMaximum(infomation.beforeDelay);
+                foreach (StatusBar bar in delayBar) {
+                    bar.setMaximum(infomation.beforeDelay);
+                }
                 delay(infomation.beforeDelay, beforeDelayActionStr);
             }
 

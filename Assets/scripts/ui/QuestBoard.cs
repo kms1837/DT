@@ -25,21 +25,13 @@ public class QuestBoard : MonoBehaviour
     // 파티 로비 정보(복제용)
     public GameObject UserPanel;
 
-    [System.Serializable]
-    private struct QuestBoardData
-    {
-        public string[] setNames;
-        public string[] golaList;
-        public string[] skillSpecNameList;
-    }
-
     private int currentUI; // 현재 UI 상태
     private int prevUI; // 이전 UI 상태
 
     private int currentStatus; // UI 상태
 
     private enum UIStatus { Main, Create, Room };
-    private enum CreateStatus { Place, Gola, Monster, Skill, Review };
+    private enum CreateStatus { Place, Gola, Threat, Skill, Review };
 
     private bool recruitmentFlag;
 
@@ -70,11 +62,11 @@ public class QuestBoard : MonoBehaviour
     private const string UserPanelGrupName = "UserList";
 
     private DataBase db;
-    private QuestBoardData uiData;
+    private RoomState.roomData uiData;
 
     void Start() {
         // issue - UI별로 script분리 필요
-        loadQuestBoardData("json/quest_board");
+        uiData = RoomState.loadRoomData("json/quest_board");
         currentUI = (int)UIStatus.Main;
         prevUI = (int)UIStatus.Main;
         homeBtnAction();
@@ -109,16 +101,6 @@ public class QuestBoard : MonoBehaviour
         dummyUsers.Add(new Ability());
 
         recruitmentFlag = false;
-    }
-
-    private void loadQuestBoardData(string fileName) {
-        try {
-            TextAsset jsonText = Resources.Load(fileName) as TextAsset;
-            uiData = JsonUtility.FromJson<QuestBoardData>(jsonText.text);
-        }
-        catch (System.Exception error) {
-            Debug.LogError(error);
-        }
     }
 
     private void changeUI() {
@@ -207,7 +189,7 @@ public class QuestBoard : MonoBehaviour
             (string)placeList[(int)room["Place"] + 1]["name"],
             uiData.golaList[(int)room["Gola"]]);
         
-        targetLabel.text = (string)threatList[(int)room["Monster"]]["name"];
+        targetLabel.text = (string)threatList[(int)room["Threat"]]["name"];
         
         Transform mySpecUI = RoomUI.transform.Find("MySpec");
         Text nameLabel = mySpecUI.Find("NameLabel").GetComponent<Text>();
@@ -270,7 +252,7 @@ public class QuestBoard : MonoBehaviour
         }
 
         string key = Enum.GetName(typeof(CreateStatus), currentStatus);
-        titleLabel.text = (currentStatus == (int)CreateStatus.Monster) ? uiData.golaList[(int)room[key]] : uiData.setNames[currentStatus];
+        titleLabel.text = (currentStatus == (int)CreateStatus.Threat) ? uiData.golaList[(int)room[key]] : uiData.setNames[currentStatus];
     }
 
     public void partySkillSelectBtnAction(int selectNum) {
@@ -306,7 +288,7 @@ public class QuestBoard : MonoBehaviour
         Popup popupObject = Popup.GetComponent<Popup>();
         
         switch (currentStatus) {
-            case (int)CreateStatus.Monster:
+            case (int)CreateStatus.Threat:
                 selectNum = selectNum + 1;
 
                 if (!Popup.activeSelf) {
@@ -317,7 +299,7 @@ public class QuestBoard : MonoBehaviour
                         partyBackBtnAction
                     );
                     
-                    room["Monster"] = selectNum;
+                    room["Threat"] = selectNum;
                 } else {
                     popupObject.clear();
                     Common.clearCloneUIObj(CreateUI.transform);
@@ -362,7 +344,7 @@ public class QuestBoard : MonoBehaviour
             case (int)CreateStatus.Gola:
                 nameList = uiData.golaList;
                 break;
-            case (int)CreateStatus.Monster:
+            case (int)CreateStatus.Threat:
                 nameList = tupleToNameList(threatList);
                 break;
         }
@@ -493,9 +475,9 @@ public class QuestBoard : MonoBehaviour
 
     public void battleStartBtnAction() {
         RoomState.gola = (int)room["Gola"];
-        RoomState.monster = (int)room["Monster"];
+        RoomState.threat = (int)room["Threat"];
         RoomState.orderUser = ((Ability)room["OrderUser"]).id;
-        RoomState.place = (int)room["Place"];
+        RoomState.place = (int)room["Place"] + 1;
         RoomState.skills = (ArrayList)room["Skill"];
 
         SceneManager.LoadScene("battle_ground");

@@ -102,13 +102,13 @@ public class DataBase {
         return list;
     }
 
-    public Dictionary<string, object> getTuple (string table, int id) {
-        Dictionary<string, object> tuple = new Dictionary<string, object>();
+    public tupleType getTuple (string table, int id) {
+        tupleType tuple = null;
 
         try {
             IDataReader reader = readQuery(string.Format("SELECT * FROM {0} WHERE id = {1}", table, id));
             while (reader.Read()) {
-                getTupleNode(reader);
+                tuple = getTupleNode(reader);
             }
         }
         catch (System.Exception error) {
@@ -122,8 +122,8 @@ public class DataBase {
         return tuple;
     }
 
-    private Dictionary<string, object> getTupleNode(IDataReader reader) {
-        Dictionary<string, object> tuple = new Dictionary<string, object>();
+    private tupleType getTupleNode(IDataReader reader) {
+        tupleType tuple = new tupleType();
 
         for (int index = 0; index < reader.FieldCount; index++) {
             string fieldName = reader.GetName(index);

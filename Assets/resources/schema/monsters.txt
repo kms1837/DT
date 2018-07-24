@@ -18,11 +18,11 @@ CREATE TABLE monsters (
     sprite VARCHAR
 );
 
-INSERT INTO monsters VALUES(1, "늑대", "normal", "늑대다", 1, 180, 100, 0, 0.5, 0.5, 10, 20, 0, 0, 0, 0, "");
-INSERT INTO monsters VALUES(2, "어린 늑대", "normal", "어린 늑대", 1, 100, 100, 0, 0.5, 0.5, 10, 10, 0, 0, 0, 0, "");
-INSERT INTO monsters VALUES(3, "어미 늑대", "normal", "어미 늑대", 1, 300, 100, 0, 0.5, 0.5, 10, 20, 0, 0, 0, 0, "");
-INSERT INTO monsters VALUES(4, "늑대 우두머리", "normal", "늑대 우두머리", 1, 1000, 100, 0, 0.5, 0.5, 10, 40, 0, 0, 0, 0, "");
-INSERT INTO monsters VALUES(5, "늑대왕", "boss", "늑대들의 왕", 1000, 100, 0, 1, 0.5, 0.5, 10, 60, 0, 0, 0, 0, "");
-INSERT INTO monsters VALUES(6, "거대곰", "boss", "정말 거대한 곰입니다.", 1000, 100, 0, 1, 0.5, 0.5, 10, 60, 0, 0, 0, 0, "");
-INSERT INTO monsters VALUES(7, "등등", "boss", "등등", 1000, 100, 0, 1, 0.5, 0.5, 10, 60, 0, 0, 0, 0, "");
-INSERT INTO monsters VALUES(8, "이것", "boss", "?", 1000, 100, 0, 1, 0.5, 0.5, 10, 60, 0, 0, 0, 0, "");
+INSERT INTO monsters VALUES(1, "늑대", "normal", "늑대다", 1, 180, 100, 0, 0.5, 0.5, 10, 20, 0, 0, 0, 0, "imgs/dummy/img1");
+INSERT INTO monsters VALUES(2, "어린 늑대", "normal", "어린 늑대", 1, 100, 100, 0, 0.5, 0.5, 10, 10, 0, 0, 0, 0, "imgs/dummy/img2");
+INSERT INTO monsters VALUES(3, "어미 늑대", "normal", "어미 늑대", 1, 300, 100, 0, 0.5, 0.5, 10, 20, 0, 0, 0, 0, "imgs/dummy/img2");
+INSERT INTO monsters VALUES(4, "늑대 우두머리", "normal", "늑대 우두머리", 1, 1000, 100, 0, 0.5, 0.5, 10, 40, 0, 0, 0, 0, "imgs/dummy/img1");
+INSERT INTO monsters VALUES(5, "늑대왕", "boss", "늑대들의 왕", 1000, 100, 0, 1, 0.5, 0.5, 10, 60, 0, 0, 0, 0, "imgs/dummy/img1");
+INSERT INTO monsters VALUES(6, "거대곰", "boss", "정말 거대한 곰입니다.", 1000, 100, 0, 1, 0.5, 0.5, 10, 60, 0, 0, 0, 0, "imgs/dummy/img1");
+INSERT INTO monsters VALUES(7, "등등", "boss", "등등", 1000, 100, 0, 1, 0.5, 0.5, 10, 60, 0, 0, 0, 0, "imgs/dummy/img2");
+INSERT INTO monsters VALUES(8, "이것", "boss", "?", 1000, 100, 0, 1, 0.5, 0.5, 10, 60, 0, 0, 0, 0, "imgs/dummy/img1");

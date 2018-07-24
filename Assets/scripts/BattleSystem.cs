@@ -4,14 +4,18 @@ using UnityEngine;
 
 using UnityEngine.UI;
 
+using tupleType = System.Collections.Generic.Dictionary<string, object>;
+
 public class BattleSystem : MonoBehaviour {
     public GameObject HeroGroup;
     public GameObject EnemyGroup;
+    public GameObject UserSpecGroup;
     public GameObject User; // 조작 하는 케릭터
 
     public Text ThreatLabel;
 
     public GameObject CharacterObject; // 복제 오브젝트
+    public GameObject UserSpecPanel; // 유저 정보 패널 복제 오브젝트(bottom view)
 
     public GameObject BottomView;
     public Transform InfomationGroup;
@@ -26,6 +30,54 @@ public class BattleSystem : MonoBehaviour {
     private ArrayList threatScore; // 위협발생 체크용 상황기록
 
     private DataBase db;
+    private RoomState.roomData roomInfo;
+
+    void Start() {
+        // battle infomation display
+        Text PlaceLabel = InfomationGroup.Find("PlaceLabel").GetComponent<Text>();
+        Text TargetLabel = InfomationGroup.Find("TargetLabel").GetComponent<Text>();
+        Text ThreatLabel = InfomationGroup.Find("ThreatLabel").GetComponent<Text>();
+
+        db = new DataBase("DT");
+        roomInfo = RoomState.loadRoomData("json/quest_board");
+
+        RoomState.place = 1;
+        RoomState.threat = 1;
+        RoomState.addUser(2);
+        RoomState.addUser(3);
+        RoomState.addUser(4);
+        RoomState.addUser(5);
+
+        tupleType place = db.getTuple("places", RoomState.place);
+        tupleType threat = db.getTuple("threats", RoomState.threat);
+
+        PlaceLabel.text = string.Format("{0} - {1}", place["name"] as string, roomInfo.golaList[RoomState.gola]);
+        TargetLabel.text = threat["name"] as string;
+
+        Debug.Log(place["name"] as string + ", " + roomInfo.golaList[RoomState.gola] + ", " + threat["name"] as string + ", ");
+
+        map = Map.loadMap(string.Format("json/threat/{0}", threat["file"] as string));
+        runRegen(); // 설정한 대로 몬스터들을 재 매 설정 시간마다 몬스터를 생성시킵니다.
+
+        if (map == null) {
+            Debug.Log("map load error");
+        }
+
+        totalScore = new Score();
+        localScore = new Score();
+        threatScore = new ArrayList();
+
+        for (int index = 0; index < map.threat.Count; index++) {
+            threatScore.Add(new Score());
+        }
+
+        usersInit();
+        playerInit();
+    }
+
+    private void gameOver() {
+
+    }
 
     IEnumerator regenCycle(Map.mapNode regenInfo) {
         while (true) {
@@ -35,18 +87,30 @@ public class BattleSystem : MonoBehaviour {
     } // 몬스터를 설정 시간마다 생성함
 
     private void monsterRegen(int monsterID) {
-        DataBase db = new DataBase("DT");
-        Dictionary<string, object> monsterData = db.getTuple("monster", monsterID);
+        tupleType monsterData = db.getTuple("monsters", monsterID);
         // issue - 빈 정보가 오면? 예외처리
         GameObject regenMonster = Instantiate(CharacterObject, EnemyGroup.transform);
         Character monsterInfo = regenMonster.GetComponent<Character>();
+        Image monsterVisual = regenMonster.GetComponent<Image>();
+
+        monsterVisual.sprite = Resources.Load<Sprite>((string)monsterData["sprite"]);
+
         regenMonster.transform.localPosition = new Vector2(1000, 0);
         monsterInfo.direction = -1;
 
         monsterInfo.infomation.movementSpeed = 1.0f;
         monsterInfo.infomation.healthPoint = (float)monsterData["hp"];
+        monsterInfo.currentHealthPoint = (float)monsterData["hp"];
 
         Debug.Log(string.Format("regen [{0}]: (hp: {1}, )", (string)monsterData["name"], (float)monsterData["hp"]));
+
+        StatusBar headHpBar = regenMonster.transform.Find("HpBar").GetComponent<StatusBar>();
+        headHpBar.init((float)monsterData["hp"], new Color(255.0f, 0, 0));
+        monsterInfo.hpBar.Add(headHpBar);
+
+        StatusBar headDelayBar = regenMonster.transform.Find("DelayBar").GetComponent<StatusBar>();
+        headDelayBar.init(0, new Color(0, 0, 255.0f));
+        monsterInfo.delayBar.Add(headDelayBar);
 
         monsterInfo.destroyCallback = (() => {
             if (localScore.killPoint.ContainsKey(monsterID)) {
@@ -94,7 +158,7 @@ public class BattleSystem : MonoBehaviour {
                     if (threatScore.killPoint.ContainsKey(huntedMonsterNumber)) {
                         huntedCount += threatScore.killPoint[huntedMonsterNumber];
 
-                        ThreatLabel.text += huntedMonsterNumber + ": (" + threatScore.killPoint[huntedMonsterNumber] + "/" + trigerObj.count + ") 사냥됨. \n";
+                        ThreatLabel.text += huntedMonsterNumber + ": (" + threatScore.killPoint[huntedMonsterNumber] + "/" + trigerObj.count + ") 사냥됨.";
                     }
                     else {
                         return false;
@@ -153,44 +217,7 @@ public class BattleSystem : MonoBehaviour {
         } // 위협들 체크
     }
 
-
-    void Start () {
-        // battle infomation display
-        Text PlaceLabel = InfomationGroup.Find("PlaceLabel").GetComponent<Text>();
-        Text TargetLabel = InfomationGroup.Find("TargetLabel").GetComponent<Text>();
-        Text ThreatLabel = InfomationGroup.Find("ThreatLabel").GetComponent<Text>();
-
-        map = Map.loadMap("json/forest");
-        runRegen(); // 설정한 대로 몬스터들을 재 매 설정 시간마다 몬스터를 생성시킵니다.
-
-        if (map == null) {
-            Debug.Log("map load error");
-        }
-
-        totalScore = new Score();
-        localScore = new Score();
-        threatScore = new ArrayList();
-
-        for (int index = 0; index < map.threat.Count; index++) {
-            threatScore.Add(new Score());
-        }
-
-        int temp = 100;
-        foreach (Transform heroObj in HeroGroup.transform) {
-            Character hero = heroObj.GetComponent<Character>();
-            hero.infomation.energyPower += 300;
-            hero.infomation.range += temp;
-            temp += 100;
-        }
-
-        temp = 50;
-        foreach (Transform enemyObj in EnemyGroup.transform) {
-            Character enemy = enemyObj.GetComponent<Character>();
-            enemy.direction = -1;
-            enemy.infomation.range += temp;
-            temp += 100;
-        }
-
+    private void playerInit() {
         Character UserObj = User.GetComponent<Character>();
         Skill testMainSkill = User.gameObject.AddComponent<Skill>();
 
@@ -226,7 +253,87 @@ public class BattleSystem : MonoBehaviour {
 
         UserObj.equipments[0] = new Ability();
         UserObj.equipments[0].energyPower = 40; // 공격력 40 장비 장착 더미
+    } // 플레이어 셋팅
+
+    private void userPanelSetting(GameObject setUserPanel, tupleType userInfo) {
+        RectTransform panelRect;
+        Transform specInfo = setUserPanel.transform.Find("SpecInfo");
+        float baseY = UserSpecGroup.transform.GetChild((UserSpecGroup.transform.childCount - 2)).localPosition.y;
+        int gap = 10;
+
+        panelRect = setUserPanel.GetComponent<RectTransform>();
+
+        panelRect.localPosition = new Vector2(0, baseY - gap - panelRect.rect.height);
+
+        Text nameLabel = specInfo.Find("NameLabel").GetComponent<Text>();
+        Text levelLabel = specInfo.Find("LevelLabel").GetComponent<Text>();
+
+        nameLabel.text = (string)userInfo["name"];
+        levelLabel.text = string.Format("Lv.{0}", ((int)userInfo["level"]).ToString());
+
+        Character user = HeroGroup.transform.GetChild(HeroGroup.transform.childCount - 1).GetComponent<Character>();
+        StatusBar uiHpBar = specInfo.Find("HpBar").GetComponent<StatusBar>();
+        uiHpBar.init(user.infomation.healthPoint, new Color(255.0f, 0, 0));
+        user.hpBar.Add(uiHpBar);
     }
+
+    private void userObjectSetting(GameObject setUser, tupleType userInfo) {
+        Character user;
+        RectTransform userRect;
+        Image userVisual;
+        float positionX;
+        int temp = 100;
+
+        user = setUser.GetComponent<Character>();
+        user.infomation.healthPoint = (float)userInfo["hp"];
+        user.currentHealthPoint = (float)userInfo["hp"];
+
+        userRect = setUser.GetComponent<RectTransform>();
+        positionX = -1000 + (userRect.rect.width * HeroGroup.transform.childCount);
+
+        userRect.localScale = new Vector3(1, 1, 1);
+        userRect.localPosition = new Vector2(positionX, 0);
+
+        userVisual = setUser.GetComponent<Image>();
+        userVisual.sprite = Resources.Load<Sprite>((string)userInfo["sprite"]);
+
+        // dummy
+        user.infomation.energyPower += 300;
+        user.infomation.range += temp;
+
+        user.direction = +1;
+        temp += 100;
+        positionX += userRect.rect.width;
+
+        StatusBar headHpBar = setUser.transform.Find("HpBar").GetComponent<StatusBar>();
+        headHpBar.init((float)userInfo["hp"], new Color(255.0f, 0, 0));
+        user.hpBar.Add(headHpBar);
+
+        StatusBar headDelayBar = setUser.transform.Find("DelayBar").GetComponent<StatusBar>();
+        headDelayBar.init(0, new Color(0, 0, 255.0f));
+        user.delayBar.Add(headDelayBar);
+
+        user.destroyCallback = (() => {
+            if (HeroGroup.transform.childCount >= 0) {
+                this.gameOver();
+            }
+        });
+    }
+
+    private void usersInit() {
+        GameObject entryUser;
+        GameObject userSpecPanel;
+        tupleType userInfo;
+
+        for (int index = 0; index < RoomState.users.Count; index++) {
+            userInfo = db.getTuple("users", (int)RoomState.users[index]);
+            entryUser = Instantiate(CharacterObject, HeroGroup.transform);
+            userSpecPanel = Instantiate(UserSpecPanel, UserSpecGroup.transform);
+            
+            userObjectSetting(entryUser, userInfo);
+            userPanelSetting(userSpecPanel, userInfo);
+        }
+    } // 유저들 셋팅
 
     public void ActiveUserMainSkill () {
         Character UserObj = User.GetComponent<Character>();
@@ -306,7 +413,6 @@ public class BattleSystem : MonoBehaviour {
     }
     
 	void Update () {
-
         foreach (Transform heroObj in HeroGroup.transform) {
             Character hero = heroObj.GetComponent<Character>();
 
