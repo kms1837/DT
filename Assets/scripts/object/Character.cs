@@ -10,6 +10,7 @@ public class Character : MonoBehaviour
     public int status; // 케릭터 상태
     private int prevStatus; // 전 상태
     public int type; // 케릭터 타입
+    public int attackType;
 
     public float currentHealthPoint; // HP
     public float currentManaPoint; // MP
@@ -21,6 +22,7 @@ public class Character : MonoBehaviour
     // 평상시, 전투모드, 공격중, 조작중, 대기중
 
     public enum CharacterType { Hero, NPC, Monster, Boss }
+    public enum CharacterAttackType { Attack, Heal }
 
     private string beforeDelayActionStr; // 선딜레이 중인 함수 이름(invoke 중인 상태)
 
@@ -39,9 +41,6 @@ public class Character : MonoBehaviour
     public UnityEngine.Events.UnityAction destroyCallback; // 케릭터 사망시 콜백 설정
 
     void OnDestroy () {
-        if (destroyCallback != null) {
-            destroyCallback();
-        }
     }
 
     void Awake () {
@@ -96,10 +95,6 @@ public class Character : MonoBehaviour
         updateUI();
     }
 
-    public void setTarget() {
-
-    }
-
     public void attch () {
         if (target == null) {
             status = (int)CharacterStatus.Normal;
@@ -113,15 +108,21 @@ public class Character : MonoBehaviour
             Character attchTarget = target.GetComponent<Character>();
             float damage = infomation.energyPower;
 
-            foreach(Skill buff in buffList) {
-                damage += buff.infomation.energyPower;
+            if (attackType == (int)CharacterAttackType.Heal) {
+                attchTarget.currentHealthPoint += this.infomation.holyPower;
+
+            } else {
+                foreach (Skill buff in buffList) {
+                    damage += buff.infomation.energyPower;
+                }
+
+                foreach (Ability equipment in equipments) {
+                    damage += equipment.energyPower;
+                }
+
+                attchTarget.hit(damage);
             }
 
-            foreach (Ability equipment in equipments) {
-                damage += equipment.energyPower;
-            }
-
-            attchTarget.hit(damage);
             delay(infomation.afterDelay, "backStatus");
         }
     }
@@ -157,6 +158,10 @@ public class Character : MonoBehaviour
     } // 공격받음
 
     private void dead() {
+        if (destroyCallback != null) {
+            destroyCallback();
+        }
+
         Destroy(this.gameObject);
     }
 

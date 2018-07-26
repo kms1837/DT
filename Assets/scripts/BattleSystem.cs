@@ -32,6 +32,8 @@ public class BattleSystem : MonoBehaviour {
     private DataBase db;
     private RoomState.roomData roomInfo;
 
+    private const float UIGAP = 10.0f;
+
     void Start() {
         // battle infomation display
         Text PlaceLabel = InfomationGroup.Find("PlaceLabel").GetComponent<Text>();
@@ -253,28 +255,39 @@ public class BattleSystem : MonoBehaviour {
 
         UserObj.equipments[0] = new Ability();
         UserObj.equipments[0].energyPower = 40; // 공격력 40 장비 장착 더미
+
+        GameObject userSpecPanel = UserSpecGroup.transform.GetChild(0).gameObject;
+        tupleType userInfo = db.getTuple("users", 1);
+        panelSetting(userSpecPanel, userInfo, User);
     } // 플레이어 셋팅
 
     private void userPanelSetting(GameObject setUserPanel, tupleType userInfo) {
-        RectTransform panelRect;
         Transform specInfo = setUserPanel.transform.Find("SpecInfo");
-        float baseY = UserSpecGroup.transform.GetChild((UserSpecGroup.transform.childCount - 2)).localPosition.y;
-        int gap = 10;
+        RectTransform panelRect = setUserPanel.GetComponent<RectTransform>();
+        int thisIndex = UserSpecGroup.transform.childCount - 1;
+        GameObject thisUserObject = HeroGroup.transform.GetChild(HeroGroup.transform.childCount - 1).gameObject;
+        float baseY = UserSpecGroup.transform.GetChild((thisIndex - 1)).localPosition.y;
 
-        panelRect = setUserPanel.GetComponent<RectTransform>();
+        panelSetting(setUserPanel, userInfo, thisUserObject);
 
-        panelRect.localPosition = new Vector2(0, baseY - gap - panelRect.rect.height);
+        panelRect.localPosition = new Vector2(0, baseY - UIGAP - panelRect.rect.height);
+    }
 
+    private void panelSetting(GameObject setUserPanel, tupleType userInfo, GameObject userObject) {
+        Transform specInfo = setUserPanel.transform.Find("SpecInfo");
+        Button targetingBtn = specInfo.Find("TargetingBtn").GetComponent<Button>();
         Text nameLabel = specInfo.Find("NameLabel").GetComponent<Text>();
         Text levelLabel = specInfo.Find("LevelLabel").GetComponent<Text>();
 
         nameLabel.text = (string)userInfo["name"];
         levelLabel.text = string.Format("Lv.{0}", ((int)userInfo["level"]).ToString());
 
-        Character user = HeroGroup.transform.GetChild(HeroGroup.transform.childCount - 1).GetComponent<Character>();
+        targetingBtn.onClick.AddListener(() => { userTargetingBtn(userObject); });
+
+        Character setUser = userObject.GetComponent<Character>();
         StatusBar uiHpBar = specInfo.Find("HpBar").GetComponent<StatusBar>();
-        uiHpBar.init(user.infomation.healthPoint, new Color(255.0f, 0, 0));
-        user.hpBar.Add(uiHpBar);
+        uiHpBar.init(setUser.infomation.healthPoint, new Color(255.0f, 0, 0));
+        setUser.hpBar.Add(uiHpBar);
     }
 
     private void userObjectSetting(GameObject setUser, tupleType userInfo) {
@@ -313,7 +326,10 @@ public class BattleSystem : MonoBehaviour {
         headDelayBar.init(0, new Color(0, 0, 255.0f));
         user.delayBar.Add(headDelayBar);
 
+        int thisPanelIndex = HeroGroup.transform.childCount;
         user.destroyCallback = (() => {
+            UserSpecGroup.transform.GetChild(thisPanelIndex).Find("DeathStatus").gameObject.SetActive(true);
+
             if (HeroGroup.transform.childCount >= 0) {
                 this.gameOver();
             }
@@ -329,11 +345,18 @@ public class BattleSystem : MonoBehaviour {
             userInfo = db.getTuple("users", (int)RoomState.users[index]);
             entryUser = Instantiate(CharacterObject, HeroGroup.transform);
             userSpecPanel = Instantiate(UserSpecPanel, UserSpecGroup.transform);
-            
+
             userObjectSetting(entryUser, userInfo);
             userPanelSetting(userSpecPanel, userInfo);
         }
+        
     } // 유저들 셋팅
+
+    public void userTargetingBtn(GameObject targetObject) {
+        Character UserObj = User.GetComponent<Character>();
+
+        UserObj.target = targetObject;
+    } // 유저를 타겟으로 설정합니다.
 
     public void ActiveUserMainSkill () {
         Character UserObj = User.GetComponent<Character>();
