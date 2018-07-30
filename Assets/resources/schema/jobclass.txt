@@ -7,3 +7,4 @@ INSERT INTO jobclass VALUES(1, "전사");
 INSERT INTO jobclass VALUES(2, "사제");
 INSERT INTO jobclass VALUES(3, "도적");
 INSERT INTO jobclass VALUES(4, "마법사");
+INSERT INTO jobclass VALUES(5, "저격수");

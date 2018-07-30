@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+using tupleType = System.Collections.Generic.Dictionary<string, object>;
+
 public class Character : MonoBehaviour
 {
     public Ability infomation; // 케릭터 정보
@@ -17,6 +19,7 @@ public class Character : MonoBehaviour
 
     public GameObject target; // 공격대상
     public int direction; // 방향
+    private int originDirection; // 평소 이동 방향
 
     public enum CharacterStatus { Normal, Battle, Attack, Control, Wait }
     // 평상시, 전투모드, 공격중, 조작중, 대기중
@@ -30,9 +33,10 @@ public class Character : MonoBehaviour
 
     public ArrayList buffList; // 버프, 디버프 리스트
 
-    // Skill Object
-    public Skill mainSkillObj;
-    public Skill subSkillObj;
+    // Skill Objects
+    public Skill ultimateSkillObj;
+    public Skill subSkillObj1;
+    public Skill subSkillObj2;
 
     // ui
     public ArrayList hpBar; // hpbar ui 목록
@@ -40,8 +44,8 @@ public class Character : MonoBehaviour
 
     public UnityEngine.Events.UnityAction destroyCallback; // 케릭터 사망시 콜백 설정
 
-    void OnDestroy () {
-    }
+    Color AfterDelayColor = new Color(255.0f, 150.0f, 0.0f);
+    Color BeforeDelayColor= new Color(0.0f, 0.0f, 255.0f);
 
     void Awake () {
         Vector2 objPosition = this.transform.position;
@@ -95,9 +99,25 @@ public class Character : MonoBehaviour
         updateUI();
     }
 
-    public void attch () {
-        if (target == null) {
-            status = (int)CharacterStatus.Normal;
+    public void setting(tupleType settingData, int inDirection) {
+        this.attackType = (int)settingData["attack_type"];
+
+        this.infomation.healthPoint = (float)settingData["health_point"];
+        this.currentHealthPoint = (float)settingData["health_point"];
+
+        this.infomation.beforeDelay = (float)settingData["before_delay"];
+        this.infomation.afterDelay = (float)settingData["after_delay"];
+
+        this.infomation.power = (float)settingData["power"];
+
+        this.infomation.movementSpeed = (float)settingData["movement_speed"];
+
+        direction = inDirection;
+        originDirection = inDirection;
+    }
+
+    public void attack () {
+        if (targetCheck()) {
             return;
         }
 
@@ -105,11 +125,14 @@ public class Character : MonoBehaviour
         float distance = Vector2.Distance(target.transform.position, currentPosition);
 
         if (infomation.range >= distance) {
-            Character attchTarget = target.GetComponent<Character>();
+            Character attackTarget = target.GetComponent<Character>();
             float damage = infomation.energyPower;
 
             if (attackType == (int)CharacterAttackType.Heal) {
-                attchTarget.currentHealthPoint += this.infomation.holyPower;
+                attackTarget.heal(this.infomation.power);
+                if (attackTarget.currentHealthPoint >= attackTarget.infomation.healthPoint) {
+                    target = null;
+                } // 체력이 가득차서 타겟을 변경함
 
             } else {
                 foreach (Skill buff in buffList) {
@@ -120,35 +143,50 @@ public class Character : MonoBehaviour
                     damage += equipment.energyPower;
                 }
 
-                attchTarget.hit(damage);
+                attackTarget.hit(damage);
             }
+        } // 공격 성공
 
-            delay(infomation.afterDelay, "backStatus");
-        }
+        delay(infomation.afterDelay, AfterDelayColor, "backStatus");
     }
 
     private void backStatus() {
         status = prevStatus;
     } // 이전상태로 돌아감
 
-    private void delay(float time, string callBack) {
+    private void delay(float time, Color delayColor, string callBack) {
         foreach (StatusBar bar in delayBar) {
             bar.setMaximum(time);
+            bar.setColor(delayColor);
             bar.runProgress();
         }
         
         Invoke(callBack, time);
     }
 
-    public void hit(float damage) {
-        this.gameObject.GetComponent<Image>().color = new Color(255, 0, 0);
-        Invoke("clear", 0.1f);
-
+    public void cancelCurrentBeforeDelay() {
         if (beforeDelayActionStr != string.Empty) {
+            foreach (StatusBar bar in delayBar) {
+                bar.stopProgress();
+            }
+
             CancelInvoke(beforeDelayActionStr);
             beforeDelayActionStr = string.Empty;
-            status = (int)CharacterStatus.Battle;
         }
+    }
+
+    public void heal(float healPower) {
+        this.transform.Find("Sprite").GetComponent<Image>().color = new Color(0, 255, 0);
+        Invoke("clear", 0.1f);
+
+        this.currentHealthPoint = this.currentHealthPoint >= this.infomation.healthPoint ? this.infomation.healthPoint : this.currentHealthPoint + healPower;
+    } // 회복받음
+
+    public void hit(float damage) {
+        this.transform.Find("Sprite").GetComponent<Image>().color = new Color(255, 0, 0);
+        Invoke("clear", 0.1f);
+
+        cancelCurrentBeforeDelay();
 
         currentHealthPoint -= damage;
 
@@ -166,45 +204,71 @@ public class Character : MonoBehaviour
     }
 
     private void clear() {
-        this.gameObject.GetComponent<Image>().color = new Color(255, 255, 255);
+        this.transform.Find("Sprite").GetComponent<Image>().color = new Color(255, 255, 255);
     }
+
+    private bool targetCheck() {
+        bool nullCheck = (target == null);
+        if (nullCheck && (status != (int)CharacterStatus.Control)) {
+            this.status = (int)CharacterStatus.Normal;
+            direction = originDirection;
+        }
+        
+        // 타켓이 없을때 유저 직접 컨트롤 상태이면 유지하고 컨트롤 상태가 아니면 일반 상태로 돌린다.
+
+        return nullCheck;
+    } // 타겟이 있는지 없는지 확인 없으면 일반상태로 바꾼다.
 
     public void move() {
         Vector2 currentPosition = this.gameObject.transform.position;
-
-        status = (target == null && status != (int)CharacterStatus.Control) ? (int)CharacterStatus.Normal : status;
-
-        if (status == (int)CharacterStatus.Battle && target != null) {
-            float distance = Vector2.Distance(target.transform.position, currentPosition);
-
-            if (this.infomation.range >= distance) {
-                this.prevStatus = status;
-                this.status = (int)CharacterStatus.Attack;
-                beforeDelayActionStr = "attch";
-
-                foreach (StatusBar bar in delayBar) {
-                    bar.setMaximum(infomation.beforeDelay);
-                }
-                delay(infomation.beforeDelay, beforeDelayActionStr);
-            }
-
-            if (this.infomation.aggroRadius < distance) {
-                target = null;
-                status = (int)CharacterStatus.Normal;
-            } // 어그로 해제
-        }
-
         this.gameObject.transform.position = new Vector2(currentPosition.x + (direction * infomation.movementSpeed), currentPosition.y);
-        
     } // 이동
 
-    public bool ActiveMainSkill() {
-        return mainSkillObj.activation();
+    public void battle() {
+        if (targetCheck()) {
+            return;
+        }
+
+        Vector2 currentPosition = this.gameObject.transform.position;
+
+        float distance = Vector2.Distance(target.transform.position, currentPosition);
+
+        if (this.infomation.range >= distance) {
+            this.prevStatus = status;
+            this.status = (int)CharacterStatus.Attack;
+            beforeDelayActionStr = "attack";
+
+            foreach (StatusBar bar in delayBar) {
+                bar.setMaximum(infomation.beforeDelay);
+            }
+
+            CancelInvoke(beforeDelayActionStr);
+            delay(infomation.beforeDelay, BeforeDelayColor, beforeDelayActionStr);
+        } else {
+            float temp = this.gameObject.transform.position.x - target.transform.position.x;
+            direction = temp >= 0 ? -1 : +1;
+
+            this.move();
+        }
+
+        if (this.infomation.aggroRadius < distance) {
+            target = null;
+            status = (int)CharacterStatus.Normal;
+        } // 어그로 해제
+        
+    } // 행동
+
+    public bool activeUltimateSkill() {
+        return ultimateSkillObj.activation();
     } // 메인 스킬 발동
 
-    public bool ActiveSubSkill() {
-        return subSkillObj.activation();
-    } // 서브 스킬 발동
+    public bool activeSubSkill1() {
+        return subSkillObj1.activation();
+    } // 서브 스킬1 발동
+
+    public bool activeSubSkill2() {
+        return subSkillObj2.activation();
+    } // 서브 스킬2 발동
 
     public bool aggroCheck(Transform target) {
         Vector2 targetPosition = target.position;

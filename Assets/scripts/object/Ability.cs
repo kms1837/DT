@@ -15,14 +15,15 @@ public class Ability
     public float healthPoint; // HP
     public float manaPoint; // MP
 
-    public float dp; // ??
+    public float defencePoint; // 방어력
 
     public float beforeDelay; // 선딜레이
     public float afterDelay; // 후딜레이
-
-    public float attackSpeed; // 공격속도
+    
     public float movementSpeed; // 이동속도
     public float range; // 공격거리
+
+    public float power;
 
     /* normal ability */
     public float energyPower; // 기력
@@ -56,8 +57,7 @@ public class Ability
         cloneObj.magicPower = this.magicPower;
         cloneObj.healthPower = this.healthPower;
         cloneObj.holyPower = this.holyPower;
-
-        cloneObj.attackSpeed = this.attackSpeed;
+        
         cloneObj.movementSpeed = this.movementSpeed;
         cloneObj.range = this.range;
 
@@ -84,8 +84,7 @@ public class Ability
         magicPower = 0; // 마력
         healthPower = 0; // 체력
         holyPower = 0; // 신성력
-
-        attackSpeed = 0; // 공격속도
+        
         movementSpeed = 0; // 이동속도
         range = 0; // 공격거리
 

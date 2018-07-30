@@ -4,13 +4,14 @@ CREATE TABLE monsters (
     type VARCHAR,
     description VARCHAR,
     level INT, 
-    hp FLOAT,
-    mp FLOAT,
-    dp FLOAT,
-    defore_delay FLOAT,
+    attack_type INT,
+    health_point FLOAT,
+    defence_point FLOAT,
+    before_delay FLOAT,
     after_delay FLOAT,
     range FLOAT,
     power FLOAT,
+    movement_speed FLOAT,
     skill1 INT,
     skill2 INT,
     skill3 INT,
@@ -18,11 +19,11 @@ CREATE TABLE monsters (
     sprite VARCHAR
 );
 
-INSERT INTO monsters VALUES(1, "늑대", "normal", "늑대다", 1, 180, 100, 0, 0.5, 0.5, 10, 20, 0, 0, 0, 0, "imgs/dummy/img1");
-INSERT INTO monsters VALUES(2, "어린 늑대", "normal", "어린 늑대", 1, 100, 100, 0, 0.5, 0.5, 10, 10, 0, 0, 0, 0, "imgs/dummy/img2");
-INSERT INTO monsters VALUES(3, "어미 늑대", "normal", "어미 늑대", 1, 300, 100, 0, 0.5, 0.5, 10, 20, 0, 0, 0, 0, "imgs/dummy/img2");
-INSERT INTO monsters VALUES(4, "늑대 우두머리", "normal", "늑대 우두머리", 1, 1000, 100, 0, 0.5, 0.5, 10, 40, 0, 0, 0, 0, "imgs/dummy/img1");
-INSERT INTO monsters VALUES(5, "늑대왕", "boss", "늑대들의 왕", 1000, 100, 0, 1, 0.5, 0.5, 10, 60, 0, 0, 0, 0, "imgs/dummy/img1");
-INSERT INTO monsters VALUES(6, "거대곰", "boss", "정말 거대한 곰입니다.", 1000, 100, 0, 1, 0.5, 0.5, 10, 60, 0, 0, 0, 0, "imgs/dummy/img1");
-INSERT INTO monsters VALUES(7, "등등", "boss", "등등", 1000, 100, 0, 1, 0.5, 0.5, 10, 60, 0, 0, 0, 0, "imgs/dummy/img2");
-INSERT INTO monsters VALUES(8, "이것", "boss", "?", 1000, 100, 0, 1, 0.5, 0.5, 10, 60, 0, 0, 0, 0, "imgs/dummy/img1");
+INSERT INTO monsters VALUES(1, "늑대", "normal", "늑대다", 1, 0, 180, 0, 0.5, 0.5, 10, 20, 1.0, 0, 0, 0, 0, "imgs/dummy/img1");
+INSERT INTO monsters VALUES(2, "어린 늑대", "normal", "어린 늑대", 1, 0, 100, 0, 0.5, 0.5, 10, 10, 1.0, 0, 0, 0, 0, "imgs/dummy/img2");
+INSERT INTO monsters VALUES(3, "어미 늑대", "normal", "어미 늑대", 1, 0, 300, 0, 0.5, 0.5, 10, 20, 1.0, 0, 0, 0, 0, "imgs/dummy/img2");
+INSERT INTO monsters VALUES(4, "늑대 우두머리", "normal", "늑대 우두머리", 1, 0, 1000, 0, 0.5, 0.5, 10, 40, 1.0, 0, 0, 0, 0, "imgs/dummy/img1");
+INSERT INTO monsters VALUES(5, "늑대왕", "boss", "늑대들의 왕", 10, 0, 1000, 1, 0.5, 0.5, 10, 60, 1.0, 0, 0, 0, 0, "imgs/dummy/img1");
+INSERT INTO monsters VALUES(6, "거대곰", "boss", "정말 거대한 곰입니다.", 10, 0, 1000, 1, 0.5, 0.5, 10, 60, 1.0, 0, 0, 0, 0, "imgs/dummy/img1");
+INSERT INTO monsters VALUES(7, "등등", "boss", "등등", 10, 0, 1000, 1, 0.5, 0.5, 10, 60, 1.0, 0, 0, 0, 0, "imgs/dummy/img2");
+INSERT INTO monsters VALUES(8, "이것", "boss", "?", 10, 0, 1000, 1, 0.5, 0.5, 10, 60, 1.0, 0, 0, 0, 0, "imgs/dummy/img1");

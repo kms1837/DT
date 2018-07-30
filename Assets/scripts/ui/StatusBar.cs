@@ -44,10 +44,14 @@ public class StatusBar : MonoBehaviour
 
     public void runProgress() {
         origin = 0;
-        current = 0;
-        StopAllCoroutines();
-        StartCoroutine(progress(maximum));
+        this.stopProgress();
+        StartCoroutine("progress", maximum);
     }
+
+    public void stopProgress() {
+        current = 0;
+        StopCoroutine("progress");
+    } // 프로그레스바를 도중에 중단합니다.
 
     private IEnumerator progress(float second) {
         while (current <= second) {
@@ -57,21 +61,26 @@ public class StatusBar : MonoBehaviour
         }
     }
 
-    public void init(float setValue, Color setColor) {
+    public void init(float setValue, Color inColor) {
         maximum = setValue;
         current = setValue;
-        barColor = setColor;
+        barColor = inColor;
 
         barImg = this.transform.Find("Bar").GetComponent<Image>();
         moveBarImg = this.transform.Find("MoveBar").GetComponent<Image>();
         barImg.color = barColor;
     }
 
-    public void init(bool mode, float setValue, Vector2 setPosition, Vector2 setSize, Color setColor) {
-        this.init(setValue, setColor);
+    public void init(bool mode, float setValue, Vector2 setPosition, Vector2 setSize, Color inColor) {
+        this.init(setValue, inColor);
         position = setPosition;
         size = setSize;
     }// GUI ver
+
+    public void setColor(Color inColor) {
+        barColor = inColor;
+        barImg.color = barColor;
+    }
 
     public void setPosition(Vector2 positionVector) {
         position = positionVector;
@@ -85,15 +94,23 @@ public class StatusBar : MonoBehaviour
     }
 
     private void Update() {
+        float moveBarEndPoint = 0.0f;
+        float barEndPoint = 0.0f;
         movePoint = current - origin;
         origin = origin + moveSpeed * movePoint;
 
-        if (maximum > 0 && current > 0 && maximum >= current) {
-            float moveBarEndPoint = movePoint < 0 ? (origin / maximum) : (current / maximum);
-            float barEndPoint = movePoint < 0 ? (current / maximum) : (origin / maximum);
+        current = current == 0 ? ((maximum / 100) / maximum) : current;
+        origin = origin == 0 ? ((maximum / 100) / maximum) : origin;
+        // zero division exception
 
-            barImg.fillAmount = barEndPoint;
+        if (maximum > 0 && maximum >= current) {
+            moveBarEndPoint = movePoint < 0 ? (origin / maximum) : (current / maximum);
+            barEndPoint = movePoint < 0 ? (current / maximum) : (origin / maximum);
+        }
+
+        if (barImg != null && moveBarImg != null) {
             moveBarImg.fillAmount = moveBarEndPoint;
+            barImg.fillAmount = barEndPoint;
         }
     }
 
