@@ -9,3 +9,4 @@ INSERT INTO threats VALUES(1, "늑대왕", "레벨 1권장", "wolfking");
 INSERT INTO threats VALUES(2, "거대곰", "정말 거대한 곰입니다.", "wolfking");
 INSERT INTO threats VALUES(3, "등등", "cxv", "wolfking");
 INSERT INTO threats VALUES(4, "이것", "qwe zxc", "wolfking");
+INSERT INTO threats VALUES(5, "테스트", "테스트용 위협", "test");

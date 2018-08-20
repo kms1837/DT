@@ -9,8 +9,10 @@ using tupleType = System.Collections.Generic.Dictionary<string, object>;
 public class Character : MonoBehaviour
 {
     public Ability infomation; // 케릭터 정보
-    public int status; // 케릭터 상태
-    private int prevStatus; // 전 상태
+    public int action; // 케릭터 행동(이동, 공격 등)
+    private int nextAction; // 다음상태 예약
+    private int prevAction; // 전 상태
+    public int status; // 케릭터 상태(화상, 빙결 등)
     public int type; // 케릭터 타입
     public int attackType;
 
@@ -21,8 +23,8 @@ public class Character : MonoBehaviour
     public int direction; // 방향
     private int originDirection; // 평소 이동 방향
 
-    public enum CharacterStatus { Normal, Battle, Attack, Control, Wait }
-    // 평상시, 전투모드, 공격중, 조작중, 대기중
+    public enum CharacterAction { Normal, Battle, Attack, Control, Wait, BeforeDelay, AfterDelay, Constraint, Ultimate, Skill1, Skill2 }
+    // 평상시, 전투모드, 공격중, 조작중, 대기중, 선딜레이중, 후딜레이중, 행동제약, 궁극기사용중, 스킬1 사용중, 스킬2 사용중
 
     public enum CharacterType { Hero, NPC, Monster, Boss }
     public enum CharacterAttackType { Attack, Heal }
@@ -53,7 +55,7 @@ public class Character : MonoBehaviour
 
         infomation = new Ability();
 
-        status = (int)CharacterStatus.Normal;
+        this.action = (int)CharacterAction.Normal;
 
         target = null;
         
@@ -91,7 +93,7 @@ public class Character : MonoBehaviour
                 bar.setCurrent(currentHealthPoint);
             }
         } catch (NullReferenceException err) {
-
+            Debug.Log(err);
         }
     }
 	
@@ -101,6 +103,8 @@ public class Character : MonoBehaviour
 
     public void setting(tupleType settingData, int inDirection) {
         this.attackType = (int)settingData["attack_type"];
+
+        this.infomation.nameStr = (string)settingData["name"];
 
         this.infomation.healthPoint = (float)settingData["health_point"];
         this.currentHealthPoint = (float)settingData["health_point"];
@@ -147,20 +151,60 @@ public class Character : MonoBehaviour
             }
         } // 공격 성공
 
-        delay(infomation.afterDelay, AfterDelayColor, "backStatus");
+        runAfterDelay();
     }
 
-    private void backStatus() {
-        status = prevStatus;
-    } // 이전상태로 돌아감
+    public void setNextAction(int inNextAction) {
+        this.nextAction = inNextAction;
+    }
 
-    private void delay(float time, Color delayColor, string callBack) {
+    private void runNextAction() {
+        backAction();
+
+        switch (this.nextAction) {
+            case (int)CharacterAction.Ultimate:
+                this.activeUltimateSkill();
+                break;
+            case (int)CharacterAction.Skill1:
+                this.activeSubSkill1();
+                break;
+            case (int)CharacterAction.Skill2:
+                this.activeSubSkill2();
+                break;
+        }
+
+        this.nextAction = prevAction;
+    } // 다음 행동을 행함
+
+    private void backAction() {
+        this.action = prevAction;
+    }
+
+    private void runBeforeDelay() {
+        float finalDelay = this.infomation.beforeDelay;
+        foreach (Skill buff in buffList) {
+            finalDelay += buff.infomation.beforeDelay;
+        } // 버프, 디버프로 인한 딜레이 추가
+        delay(finalDelay, (int)Character.CharacterAction.BeforeDelay, BeforeDelayColor, beforeDelayActionStr);
+    }
+
+    private void runAfterDelay() {
+        float finalDelay = this.infomation.afterDelay;
+        foreach (Skill buff in buffList) {
+            finalDelay += buff.infomation.afterDelay;
+        } // 버프, 디버프로 인한 딜레이 추가
+        delay(infomation.afterDelay, (int)Character.CharacterAction.AfterDelay, AfterDelayColor, "runNextAction");
+    }
+
+    private void delay(float time, int setStatus, Color delayColor, string callBack) {
         foreach (StatusBar bar in delayBar) {
             bar.setMaximum(time);
             bar.setColor(delayColor);
             bar.runProgress();
         }
-        
+
+        this.action = setStatus;
+
         Invoke(callBack, time);
     }
 
@@ -190,6 +234,8 @@ public class Character : MonoBehaviour
 
         currentHealthPoint -= damage;
 
+        this.action = (int)Character.CharacterAction.Battle;
+
         if (currentHealthPoint <= 0) {
             dead();            
         }
@@ -209,8 +255,8 @@ public class Character : MonoBehaviour
 
     private bool targetCheck() {
         bool nullCheck = (target == null);
-        if (nullCheck && (status != (int)CharacterStatus.Control)) {
-            this.status = (int)CharacterStatus.Normal;
+        if (nullCheck && (action != (int)CharacterAction.Control)) {
+            this.action = (int)CharacterAction.Normal;
             direction = originDirection;
         }
         
@@ -234,8 +280,8 @@ public class Character : MonoBehaviour
         float distance = Vector2.Distance(target.transform.position, currentPosition);
 
         if (this.infomation.range >= distance) {
-            this.prevStatus = status;
-            this.status = (int)CharacterStatus.Attack;
+            this.prevAction = action;
+            this.action = (int)CharacterAction.Attack;
             beforeDelayActionStr = "attack";
 
             foreach (StatusBar bar in delayBar) {
@@ -243,7 +289,7 @@ public class Character : MonoBehaviour
             }
 
             CancelInvoke(beforeDelayActionStr);
-            delay(infomation.beforeDelay, BeforeDelayColor, beforeDelayActionStr);
+            runBeforeDelay();
         } else {
             float temp = this.gameObject.transform.position.x - target.transform.position.x;
             direction = temp >= 0 ? -1 : +1;
@@ -253,20 +299,43 @@ public class Character : MonoBehaviour
 
         if (this.infomation.aggroRadius < distance) {
             target = null;
-            status = (int)CharacterStatus.Normal;
+            action = (int)CharacterAction.Normal;
         } // 어그로 해제
-        
     } // 행동
 
+    private bool actionCheck() {
+        bool result = ( this.action == (int)Character.CharacterAction.AfterDelay    ||
+                        this.action == (int)Character.CharacterAction.BeforeDelay   ||
+                        this.action == (int)Character.CharacterAction.Constraint);
+
+        if (result) {
+            Debug.Log("행동불가");
+        }
+
+        return result;
+    } // 행동이 가능한지 체크하고 행동이 불가능하면 이전 행동으로 되돌림
+
     public bool activeUltimateSkill() {
+        if (actionCheck()) {
+            return false;
+        }
+
         return ultimateSkillObj.activation();
     } // 메인 스킬 발동
 
     public bool activeSubSkill1() {
+        if (actionCheck()) {
+            return false;
+        }
+
         return subSkillObj1.activation();
     } // 서브 스킬1 발동
 
     public bool activeSubSkill2() {
+        if (actionCheck()) {
+            return false;
+        }
+
         return subSkillObj2.activation();
     } // 서브 스킬2 발동
 

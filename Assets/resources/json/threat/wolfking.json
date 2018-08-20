@@ -42,22 +42,7 @@
                 "produce": 1
             }]
         },
-
-        {
-            "title": "테스트용",
-            "desc": "테스트가 필요해!",
-            "trigger":[{
-                "type": "hunt",
-                "monsterList": [1],
-                "count": 2
-            }],
-            "result": [{
-                "type": "produce",
-                "monsterList": [1],
-                "produce": 3
-            }]
-        },
-
+        
         {
             "title": "늑대왕",
             "desc": "늑대 늑대 늑대",

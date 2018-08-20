@@ -19,10 +19,6 @@ public class BattleSystem : MonoBehaviour {
 
     public GameObject BottomView;
     public Transform InfomationGroup;
-    
-    private StatusBar ultimateSkillCollTimeBar;
-    private StatusBar subSkillCollTimeBar1;
-    private StatusBar subSkillCollTimeBar2;
 
     private Map map;
 
@@ -45,14 +41,18 @@ public class BattleSystem : MonoBehaviour {
         db = new DataBase("DT");
         roomInfo = RoomState.loadRoomData("json/quest_board");
 
+        // 더미
+        RoomState.playerID = 1;
+        RoomState.orderUser = 1;
+
         RoomState.place = 1;
         RoomState.threat = 1;
-        
+        /*
         RoomState.addUser(2);
         RoomState.addUser(3);
         RoomState.addUser(4);
         RoomState.addUser(5);
-        
+        */
         tupleType place = db.getTuple("places", RoomState.place);
         tupleType threat = db.getTuple("threats", RoomState.threat);
 
@@ -76,8 +76,8 @@ public class BattleSystem : MonoBehaviour {
             threatScore.Add(new Score());
         }
 
-        usersInit();
         playerInit();
+        usersInit();
     }
 
     private void gameOver() {
@@ -143,7 +143,6 @@ public class BattleSystem : MonoBehaviour {
     private void regen(List<int> monsterList) {
         foreach (int monsterNumber in monsterList) {
             monsterRegen(monsterNumber);
-            // issue - 몬스터 db조회하여 이미지나 스탯설정할것
         }
     } // 몬스터 생성
 
@@ -223,57 +222,40 @@ public class BattleSystem : MonoBehaviour {
 
     private void playerInit() {
         Character playerObj = Player.GetComponent<Character>();
-        Skill testMainSkill = Player.gameObject.AddComponent<Skill>();
-
-        playerObj.ultimateSkillObj = testMainSkill;
-
-        testMainSkill.targetList.Add(playerObj);
-        testMainSkill.type = (int)Skill.SkillType.Holy;
-        //testSkill.type = (int)Skill.SkillType.Buff;
-        testMainSkill.infomation.healthPoint = 50;
-        testMainSkill.infomation.energyPower = 50;
-        testMainSkill.duration = 300;
-        testMainSkill.coolTime = 10;
-
-        Skill testSubSkill = Player.AddComponent<Skill>();
-
-        playerObj.subSkillObj1 = testSubSkill;
-
-        testSubSkill.targetList.Add(playerObj);
-        testSubSkill.type = (int)Skill.SkillType.Holy;
-        testSubSkill.infomation.healthPoint = 5;
-        testSubSkill.infomation.energyPower = 50;
-        testSubSkill.duration = 300;
-        testSubSkill.coolTime = 1;
 
         Transform ultimateSkillBtn = BottomView.transform.Find("UltimateSkillButton");
         Transform subvSkillBtn1 = BottomView.transform.Find("SubSkillButton1");
         Transform subvSkillBtn2 = BottomView.transform.Find("SubSkillButton2");
 
-        ultimateSkillCollTimeBar = ultimateSkillBtn.Find("CoolTimeBar").GetComponent<StatusBar>();
-        ultimateSkillCollTimeBar.init(testMainSkill.coolTime, new Color(255.0f, 255.0f, 255.0f));
-
-        subSkillCollTimeBar1 = subvSkillBtn1.Find("CoolTimeBar").GetComponent<StatusBar>();
-        subSkillCollTimeBar1.init(testSubSkill.coolTime, new Color(255.0f, 255.0f, 255.0f));
-
-        subSkillCollTimeBar2 = subvSkillBtn2.Find("CoolTimeBar").GetComponent<StatusBar>();
-        subSkillCollTimeBar2.init(testSubSkill.coolTime, new Color(255.0f, 255.0f, 255.0f));
-
-        playerObj.equipments[0] = new Ability();
-        playerObj.equipments[0].energyPower = 40; // 공격력 40 장비 장착 더미
-
         GameObject userSpecPanel = UserSpecGroup.transform.GetChild(0).gameObject;
-        tupleType userInfo = db.getTuple("users", 1);
+        tupleType userInfo = db.getTuple("users", RoomState.playerID);
         float originPositionY = Player.transform.localPosition.y;
 
         panelSetting(userSpecPanel, userInfo, Player);
         userObjectSetting(Player, userInfo);
 
+        StatusBar ultimateSkillCollTimeBar = ultimateSkillBtn.Find("CoolTimeBar").GetComponent<StatusBar>();
+        playerObj.ultimateSkillObj.coolTImeBarSetting(ultimateSkillCollTimeBar, new Color(255.0f, 255.0f, 255.0f));
+        skillBtnSetting(ultimateSkillBtn.Find("CoolTimeBar"), playerObj.ultimateSkillObj);
+        playerObj.ultimateSkillObj.coolTimeBar.Add(ultimateSkillCollTimeBar);
+
+        StatusBar subSkillCollTimeBar1 = subvSkillBtn1.Find("CoolTimeBar").GetComponent<StatusBar>();
+        playerObj.subSkillObj1.coolTImeBarSetting(subSkillCollTimeBar1, new Color(255.0f, 255.0f, 255.0f));
+        skillBtnSetting(subvSkillBtn1.Find("CoolTimeBar"), playerObj.subSkillObj1);
+        playerObj.subSkillObj1.coolTimeBar.Add(subSkillCollTimeBar1);
+
+        StatusBar subSkillCollTimeBar2 = subvSkillBtn2.Find("CoolTimeBar").GetComponent<StatusBar>();
+        playerObj.subSkillObj2.coolTImeBarSetting(subSkillCollTimeBar2, new Color(255.0f, 255.0f, 255.0f));
+        skillBtnSetting(subvSkillBtn2.Find("CoolTimeBar"), playerObj.subSkillObj2);
+        playerObj.subSkillObj2.coolTimeBar.Add(subSkillCollTimeBar2);
+
+        playerObj.equipments[0] = new Ability();
+        playerObj.equipments[0].energyPower = 40; // 공격력 40 장비 장착 더미
+
         Player.transform.localPosition = new Vector2(userStartPoint.x, originPositionY);
     } // 플레이어 셋팅
 
     private void userPanelSetting(GameObject setUserPanel, tupleType userInfo) {
-        Transform specInfo = setUserPanel.transform.Find("SpecInfo");
         RectTransform panelRect = setUserPanel.GetComponent<RectTransform>();
         int thisIndex = UserSpecGroup.transform.childCount - 1;
         GameObject thisUserObject = HeroGroup.transform.GetChild(HeroGroup.transform.childCount - 1).gameObject;
@@ -286,19 +268,63 @@ public class BattleSystem : MonoBehaviour {
 
     private void panelSetting(GameObject setUserPanel, tupleType userInfo, GameObject userObject) {
         Transform specInfo = setUserPanel.transform.Find("SpecInfo");
-        Button targetingBtn = specInfo.Find("TargetingBtn").GetComponent<Button>();
+        GameObject targetingBtn = specInfo.Find("TargetingBtn").gameObject;
+        Button targetingBtnObj = targetingBtn.GetComponent<Button>();
         Text nameLabel = specInfo.Find("NameLabel").GetComponent<Text>();
         Text levelLabel = specInfo.Find("LevelLabel").GetComponent<Text>();
+
+        Transform ultimateSkillBtn = specInfo.transform.Find("UltimateSkillButton");
 
         nameLabel.text = (string)userInfo["name"];
         levelLabel.text = string.Format("Lv.{0}", ((int)userInfo["level"]).ToString());
 
-        targetingBtn.onClick.AddListener(() => { userTargetingBtn(userObject); });
+        if (Player.GetComponent<Character>().attackType == (int)Character.CharacterAttackType.Heal) {
+            targetingBtn.SetActive(true);
+            targetingBtnObj.onClick.AddListener(() => { userTargetingBtn(userObject); });
+        } else {
+            targetingBtn.SetActive(false);
+        }
+        
 
         Character setUser = userObject.GetComponent<Character>();
         StatusBar uiHpBar = specInfo.Find("HpBar").GetComponent<StatusBar>();
         uiHpBar.init((float)userInfo["health_point"], new Color(255.0f, 0, 0));
         setUser.hpBar.Add(uiHpBar);
+
+        Skill ultimateSkill = userObject.AddComponent<Skill>();
+        ultimateSkill.setting(db.getTuple("skills", (int)userInfo["ultimate_skill"]), HeroGroup, EnemyGroup, true);
+        setUser.ultimateSkillObj = ultimateSkill;
+
+        Skill subSkill1 = userObject.AddComponent<Skill>();
+        subSkill1.setting(db.getTuple("skills", (int)userInfo["skill1"]), HeroGroup, EnemyGroup, false);
+        setUser.subSkillObj1 = subSkill1;
+
+        Skill subSkill2 = userObject.AddComponent<Skill>();
+        subSkill2.setting(db.getTuple("skills", (int)userInfo["skill2"]), HeroGroup, EnemyGroup, false);
+        setUser.subSkillObj2 = subSkill2;
+
+        Transform collTimebar = ultimateSkillBtn.Find("CoolTimeBar");
+        skillBtnSetting(collTimebar, ultimateSkill);
+
+        StatusBar ultimateSkillCollTimeBar = collTimebar.GetComponent<StatusBar>();
+        ultimateSkill.coolTImeBarSetting(ultimateSkillCollTimeBar, new Color(255.0f, 255.0f, 255.0f));
+        ultimateSkill.coolTimeBar.Add(ultimateSkillCollTimeBar);
+
+        if (RoomState.orderUser == RoomState.playerID) {
+            Button ultimateOrderBtn = ultimateSkillBtn.GetComponent<Button>();
+            ultimateOrderBtn.onClick.AddListener(() => {
+                setUser.setNextAction((int)Character.CharacterAction.Ultimate);
+                Debug.Log(string.Format("{0} 에게 궁극기 사용 명령", (string)userInfo["name"]));
+            });
+        }// 플레이어가 지휘자 일경우 버튼 활성화
+    }
+
+    private void skillBtnSetting(Transform skillButton, Skill skillInfo) {
+        Image skillIconBackground = skillButton.Find("Background").GetComponent<Image>();
+        Image skillIcon = skillButton.Find("Bar").GetComponent<Image>();
+
+        skillIconBackground.sprite = skillInfo.iconSprite;
+        skillIcon.sprite = skillInfo.iconSprite;
     }
 
     private void userObjectSetting(GameObject setUser, tupleType userInfo) {
@@ -371,24 +397,36 @@ public class BattleSystem : MonoBehaviour {
     } // 유저를 타겟으로 설정합니다.
 
     public void activeUltimateSkill() {
+        if (Player == null) {
+            return;
+        }
+
+        BottomView.transform.Find("UltimateSkillButton").Find("CoolTimeBar").Find("Bar").GetComponent<Image>().color = new Color(0f, 174.0f, 255.0f);
+
         Character UserObj = Player.GetComponent<Character>();
-        if (UserObj.activeUltimateSkill()) {
-            ultimateSkillCollTimeBar.runProgress();
-        };
+        UserObj.setNextAction((int)Character.CharacterAction.Ultimate);
     }
 
     public void activeUserSubSkill1() {
+        if (Player == null) {
+            return;
+        }
+
+        BottomView.transform.Find("SubSkillButton1").Find("CoolTimeBar").Find("Bar").GetComponent<Image>().color = new Color(0f, 174.0f, 255.0f);
+
         Character UserObj = Player.GetComponent<Character>();
-        if (UserObj.activeSubSkill1()) {
-            subSkillCollTimeBar1.runProgress();
-        };
+        UserObj.setNextAction((int)Character.CharacterAction.Skill1);
     }
 
     public void activeUserSubSkill2() {
+        if (Player == null) {
+            return;
+        }
+
+        BottomView.transform.Find("SubSkillButton2").Find("CoolTimeBar").Find("Bar").GetComponent<Image>().color = new Color(0f, 174.0f, 255.0f);
+
         Character UserObj = Player.GetComponent<Character>();
-        if (UserObj.activeSubSkill2()) {
-            subSkillCollTimeBar2.runProgress();
-        };
+        UserObj.setNextAction((int)Character.CharacterAction.Skill2);
     }
 
     private void searchAlliance(Transform targetObj, Transform allianceGroup) {
@@ -405,7 +443,7 @@ public class BattleSystem : MonoBehaviour {
             }
         }
 
-        target.status = (int)Character.CharacterStatus.Battle;
+        target.action = (int)Character.CharacterAction.Battle;
     } // 체력이 가장 낮은 아군을 찾습니다.
 
     private void searchEnemy(Transform targetObj, Transform enemyGroup) {
@@ -425,51 +463,54 @@ public class BattleSystem : MonoBehaviour {
             }
 
             if (minDistance != -1) {
-                target.status = (int)Character.CharacterStatus.Battle;
+                target.action = (int)Character.CharacterAction.Battle;
             }
         }
     } // 적을 찾습니다.
 
     private void playerTransform(int setDirection, int setStatus) {
         Character UserObj = Player.GetComponent<Character>();
-        UserObj.direction = setDirection;
-        UserObj.status = setStatus;
-        UserObj.target = null;
-        UserObj.cancelCurrentBeforeDelay();
+        if (UserObj.action != (int)Character.CharacterAction.AfterDelay) {
+            UserObj.direction = setDirection;
+            UserObj.action = setStatus;
+            UserObj.cancelCurrentBeforeDelay();
+        }
     } // 플레이어의 이동방향과 상태를 바꿉니다.
 
     public void playerControlMoveStart (int setDirection) {
         CancelInvoke("playerAutoTransform");
-        playerTransform(setDirection, (int)Character.CharacterStatus.Control);
+        playerTransform(setDirection, (int)Character.CharacterAction.Control);
     } // 화살표 버튼을 누르기 시작합니다.
 
     public void playerControlMoveEnd() {
-        playerTransform(1, (int)Character.CharacterStatus.Wait);
+        playerTransform(1, (int)Character.CharacterAction.Wait);
         Invoke("playerAutoTransform", 1.0f);
     } // 이동 조작을 중지합니다.
 
     private void playerAutoTransform() {
-        playerTransform(1, (int)Character.CharacterStatus.Normal);
+        playerTransform(1, (int)Character.CharacterAction.Normal);
     } // 플레이어를 자동으로 전환합니다.
 
-    private void basePattern(Transform targetObj, Transform colleagueGroup, Transform enemyGroup) {
+    private void basePattern(Transform targetObj, Transform allianceGroup, Transform enemyGroup) {
         Character target = targetObj.GetComponent<Character>();
 
-        switch (target.status) {
-            case (int)Character.CharacterStatus.Normal:
+        switch (target.action) {
+            case (int)Character.CharacterAction.Normal:
                 target.move();
                 if (target.attackType == (int)Character.CharacterAttackType.Heal) {
-                    searchAlliance(targetObj.transform, colleagueGroup.transform);
+                    searchAlliance(targetObj.transform, allianceGroup.transform);
                 } else {
                     searchEnemy(targetObj.transform, enemyGroup.transform);
                 }
                 break;
-            case (int)Character.CharacterStatus.Battle:
+            case (int)Character.CharacterAction.Battle:
                 target.battle();
                 break;
-            case (int)Character.CharacterStatus.Attack:
+            case (int)Character.CharacterAction.BeforeDelay:
+            case (int)Character.CharacterAction.AfterDelay:
+            case (int)Character.CharacterAction.Attack:
                 break;
-            case (int)Character.CharacterStatus.Control:
+            case (int)Character.CharacterAction.Control:
                 target.move();
                 break;
         }

@@ -1,0 +1,20 @@
+CREATE TABLE weapons (
+    id INTEGER NOT NULL Primary Key AUTOINCREMENT,
+    name VARCHAR,
+    type INT,
+    power INTEGER,
+    energy_power FLOAT,
+    magic_power FLOAT,
+    health_power FLOAT,
+    holy_power FLOAT
+);
+
+INSERT INTO weapons VALUES (1, "그냥검", 1, 1, 0, 0, 0, 0);
+INSERT INTO weapons VALUES (2, "활", 1, 1.7, 0, 0, 0, 0);
+INSERT INTO weapons VALUES (3, "막대", 1, 1, 0, 0, 0, 0);
+INSERT INTO weapons VALUES (4, "큰검", 1, 1.5, 0, 0, 0, 0);
+INSERT INTO weapons VALUES (5, "지팡이", 1, 1.5, 0, 0, 0, 1);
+
+INSERT INTO weapons VALUES (6, "단검", 1, 0, 1, 0, 0, 0);
+INSERT INTO weapons VALUES (7, "방패", 1, 0, 0, 0, 0, 0);
+INSERT INTO weapons VALUES (7, "수정구", 1, 0, 0, 1, 0, 0);

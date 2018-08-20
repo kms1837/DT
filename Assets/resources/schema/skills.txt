@@ -12,12 +12,20 @@ CREATE TABLE skills (
     script VARCHAR
 );
 
-INSERT INTO skills VALUES(1, "회복", "대상 1초마다 10회 치유", 0.1, 0.9, 3, 10, 60, "", "img/skill", "");
-INSERT INTO skills VALUES(2, "치유의 안개", "아군 전체 치유", 0, 0, 0, 2, 10, "", "img/skill","");
-INSERT INTO skills VALUES(3, "기습", "3초간 공격속도 100% 증가", 0, 0, 0, 0, 30, "", "img/skill","");
-INSERT INTO skills VALUES(4, "후리기", "대상 강한 공격", 0, 0, 0, 2, 5, "", "img/skill","");
-INSERT INTO skills VALUES(5, "충격파", "대상을 강하게 공격하며 3초간 스턴을 입힌다.", 0, 0, 0, 3, 20, "", "img/skill","");
-INSERT INTO skills VALUES(6, "화염구", "대상에게 강한 화염 공격", 0, 0, 0, 3, 10, "", "img/skill","");
-INSERT INTO skills VALUES(7, "포효", "10초간 공격력 10% 증가", 0, 0, 0, 0, 60, "", "img/skill","");
-INSERT INTO skills VALUES(8, "속사", "3초간 기본공격 후딜레이 제거", 0, 0, 0, 0, 30, "", "img/skill","");
-INSERT INTO skills VALUES(9, "폭발탄", "광역 공격", 0, 0, 0, 2, 10, "", "img/skill","");
+INSERT INTO skills VALUES(1, "회복", "대상 1초마다 10회 치유", 0.1, 0.9, 3, 10, 60, "", "imgs/dummy/skill", "heal");
+INSERT INTO skills VALUES(2, "치유의 안개", "아군 전체 치유", 0, 0, 0, 2, 10, "", "imgs/dummy/skill", "healing_fog");
+INSERT INTO skills VALUES(3, "기습", "3초간 공격속도 100% 증가", 0, 0, 0, 0, 30, "", "imgs/dummy/skill","surprise_attack");
+INSERT INTO skills VALUES(4, "강타", "대상 강한 공격", 0, 0, 0, 2, 5, "", "imgs/dummy/skill", "power_attack");
+INSERT INTO skills VALUES(5, "후리기", "대상 강한 공격", 0, 0, 0, 2, 5, "", "imgs/dummy/skill","power_attack");
+INSERT INTO skills VALUES(6, "충격파", "대상을 강하게 공격하며 3초간 스턴을 입힌다.", 0, 0, 0, 3, 20, "", "imgs/dummy/skill", "shock_wave");
+INSERT INTO skills VALUES(7, "화염구", "대상에게 강한 화염 공격", 0, 0, 0, 3, 10, "", "imgs/dummy/skill", "fire_ball");
+INSERT INTO skills VALUES(8, "포효", "10초간 공격력 10% 증가", 0, 0, 0, 0, 60, "", "imgs/dummy/skill", "roar");
+INSERT INTO skills VALUES(9, "속사", "3초간 기본공격 후딜레이 제거", 0, 0, 0, 0, 30, "", "imgs/dummy/skill", "quick_shot");
+INSERT INTO skills VALUES(10, "폭발탄", "광역 공격", 0, 0, 0, 2, 10, "", "imgs/dummy/skill", "explosion_bullet");
+
+INSERT INTO skills VALUES(11, "치유의 손길", "현재 대상 체쳑 100% 회복", 0.1, 0.9, 3, 10, 60, "", "imgs/dummy/skill", "heal_hand");
+INSERT INTO skills VALUES(12, "연막탄", "3초간 아군 피해감소 90%", 0.1, 0.4, 3, 10, 60, "", "imgs/dummy/skill", "smoke_shell");
+INSERT INTO skills VALUES(13, "눈보라", "적 전체 광역 피해 +3초간 공격 불가", 0.4, 0.9, 3, 10, 60, "", "imgs/dummy/skill", "blizzard");
+INSERT INTO skills VALUES(14, "버티기", "자신 체력 10% 아래로 안내려감", 0.2, 0.4, 3, 10, 60, "", "imgs/dummy/skill", "bear");
+INSERT INTO skills VALUES(15, "육중한 일격", "단일 대상 정말 강한 공격", 0.4, 0.6, 0.7, 10, 60, "", "imgs/dummy/skill", "heavy_blow");
+INSERT INTO skills VALUES(16, "집중공격", "3초간 대상 받는피해 100% 증가", 0.3, 0.8, 3, 10, 60, "", "imgs/dummy/skill", "concentrated_attack");

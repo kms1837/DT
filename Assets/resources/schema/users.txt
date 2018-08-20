@@ -22,16 +22,19 @@ CREATE TABLE users (
 );
 
 INSERT INTO users (name, level, job_class, attack_type, health_point, defence_point, before_delay, after_delay, range, power, energy_power, magic_power, health_power, holy_power, movement_speed, ultimate_skill, skill1, skill2, sprite) 
-VALUES("Sample-M", 1, 4, 0, 300, 0, 0.6, 0.4, 10, 20, 20, 0, 0, 0, 1.0, 1, 1, 1, "imgs/dummy/img2");
+VALUES("test", 1, 4, 0, 300, 0, 0.6, 0.4, 10, 20, 20, 0, 0, 0, 1.0, 1, 2, 3, "imgs/dummy/img2");
 
 INSERT INTO users (name, level, job_class, attack_type, health_point, defence_point, before_delay, after_delay, range, power, energy_power, magic_power, health_power, holy_power, movement_speed, ultimate_skill, skill1, skill2, sprite) 
-VALUES("Sample-W", 1, 1, 0, 1000, 9, 0.2, 0.4, 10, 15, 0, 0, 0, 0, 1.0, 1, 1, 1, "imgs/dummy/img1");
+VALUES("Sample-M", 2, 4, 0, 300, 0, 0.6, 0.4, 10, 20, 20, 0, 0, 0, 1.0, 13, 6, 7, "imgs/dummy/img2");
 
 INSERT INTO users (name, level, job_class, attack_type, health_point, defence_point, before_delay, after_delay, range, power, energy_power, magic_power, health_power, holy_power, movement_speed, ultimate_skill, skill1, skill2, sprite) 
-VALUES("Sample-R", 1, 3, 0, 400, 0, 0.1, 0.4, 20, 18, 0, 0, 0, 0, 1.0, 1, 1, 1, "imgs/dummy/img1");
+VALUES("Sample-W", 3, 1, 0, 1000, 9, 0.2, 0.4, 10, 15, 0, 0, 0, 0, 1.0, 14, 4, 8, "imgs/dummy/img1");
 
 INSERT INTO users (name, level, job_class, attack_type, health_point, defence_point, before_delay, after_delay, range, power, energy_power, magic_power, health_power, holy_power, movement_speed, ultimate_skill, skill1, skill2, sprite) 
-VALUES("Sample-MM", 1, 5, 0, 350, 0, 0.3, 0.8, 20, 22, 0, 0, 0, 0, 1.0, 1, 1, 1, "imgs/dummy/img1");
+VALUES("Sample-R", 4, 3, 0, 400, 0, 0.1, 0.4, 20, 18, 0, 0, 0, 0, 1.0, 12, 3, 5, "imgs/dummy/img1");
 
 INSERT INTO users (name, level, job_class, attack_type, health_point, defence_point, before_delay, after_delay, range, power, energy_power, magic_power, health_power, holy_power, movement_speed, ultimate_skill, skill1, skill2, sprite) 
-VALUES("Sample-P", 1, 2, 1, 300, 0, 0.1, 0.9, 150, 15, 0, 0, 0, 0, 1.0, 1, 1, 1, "imgs/dummy/img2");
+VALUES("Sample-MM", 5, 5, 0, 350, 0, 0.3, 0.8, 20, 22, 0, 0, 0, 0, 1.0, 16, 9, 10, "imgs/dummy/img1");
+
+INSERT INTO users (name, level, job_class, attack_type, health_point, defence_point, before_delay, after_delay, range, power, energy_power, magic_power, health_power, holy_power, movement_speed, ultimate_skill, skill1, skill2, sprite) 
+VALUES("Sample-P", 6, 2, 1, 300, 0, 0.1, 0.9, 150, 15, 0, 0, 0, 0, 1.0, 11, 1, 2, "imgs/dummy/img2");
