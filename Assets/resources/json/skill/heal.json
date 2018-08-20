@@ -1,0 +1,7 @@
+{
+    "main" : {
+        "type" : 0,
+        "loop": 10,
+        "loopTime": 0.1
+    }
+}

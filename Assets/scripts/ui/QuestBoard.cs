@@ -92,13 +92,13 @@ public class QuestBoard : MonoBehaviour
         mySpec.nameStr = "주인공";
         mySpec.jobClass = 1;
         mySpec.mainSkill = 2;
-        room.Add("OrderUser", mySpec);
+        room.Add("OrderUser", 1);
 
         dummyUsers = new ArrayList();
-        dummyUsers.Add(new Ability());
-        dummyUsers.Add(new Ability());
-        dummyUsers.Add(new Ability());
-        dummyUsers.Add(new Ability());
+        dummyUsers.Add(2);
+        dummyUsers.Add(3);
+        dummyUsers.Add(4);
+        dummyUsers.Add(5);
 
         recruitmentFlag = false;
     }
@@ -128,11 +128,13 @@ public class QuestBoard : MonoBehaviour
         Transform displayPanel = userListUIGroup.GetChild(userList.Count);
         Transform displayInfo = displayPanel.GetChild(1);
 
-        Ability user = dummyUsers[userList.Count] as Ability;
-        userList.Add(dummyUsers[userList.Count]);
+        int userID = (int)dummyUsers[userList.Count];
+        userList.Add(userID);
 
-        string jobClassName = (string)jobClassList[user.jobClass]["name"];
-        string mainSkillName = (string)skillList[user.mainSkill]["name"];
+        tupleType userInfo = db.getTuple("users", userID);
+
+        string jobClassName = (string)jobClassList[(int)userInfo["job_class"]]["name"];
+        string mainSkillName = (string)skillList[(int)userInfo["ultimate_skill"]]["name"];
 
         displayPanel.GetChild(0).gameObject.SetActive(false);
         displayInfo.gameObject.SetActive(true);
@@ -143,22 +145,22 @@ public class QuestBoard : MonoBehaviour
         Text mainSkillLabel = displayInfo.Find("MainSkillIcon").GetChild(1).GetComponent<Text>();
         Button detailButton = displayInfo.Find("DetailBtn").GetComponent<Button>();
         
-        nameLabel.text = user.nameStr;
-        levelLabel.text = string.Format("Lv.{0}", user.level);
+        nameLabel.text = (string)userInfo["name"];
+        levelLabel.text = string.Format("Lv.{0}", (int)userInfo["level"]);
         jobClassLabel.text = jobClassName;
         mainSkillLabel.text = mainSkillName;
 
         detailButton.onClick.AddListener(() => {
             Popup popupObj =  Popup.GetComponent<Popup>();
 
-            string userMsg = string.Format("Lv. {0} - {1}\n메인스킬: {2}", user.level, jobClassName, mainSkillName);
-            userMsg += (Ability)room["OrderUser"] == user ? "\n지휘자" : "\n파티원";
+            string userMsg = string.Format("Lv. {0} - {1}\n메인스킬: {2}", (int)userInfo["level"], jobClassName, mainSkillName);
+            userMsg += (int)room["OrderUser"] == (int)userInfo["id"] ? "\n지휘자" : "\n파티원";
 
             popupObj.show(
-                user.nameStr,
+                (string)userInfo["name"],
                 userMsg,
                 () => {
-                    room["OrderUser"] = user;
+                    room["OrderUser"] = (int)userInfo["id"];
                     popupObj.clear();
                 },
                 () => { popupObj.clear(); }
@@ -476,9 +478,17 @@ public class QuestBoard : MonoBehaviour
     public void battleStartBtnAction() {
         RoomState.gola = (int)room["Gola"];
         RoomState.threat = (int)room["Threat"];
-        RoomState.orderUser = ((Ability)room["OrderUser"]).id;
+        RoomState.orderUser = (int)room["OrderUser"];
         RoomState.place = (int)room["Place"] + 1;
         RoomState.skills = (ArrayList)room["Skill"];
+
+        if (RoomState.users != null) {
+            RoomState.users.Clear();
+        }
+
+        foreach(int userID in userList) {
+            RoomState.addUser(userID);
+        }
 
         SceneManager.LoadScene("battle_ground");
     }

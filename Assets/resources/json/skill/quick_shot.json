@@ -1,0 +1,11 @@
+{
+    "main": {
+        "type": 1,
+        "duration": 180,
+        "buffList": [{
+                "abillity": "afterDelay",
+                "percentage": 100
+            }
+        ]
+    }
+}

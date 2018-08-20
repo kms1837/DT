@@ -1,0 +1,11 @@
+{
+    "main": {
+        "type": 1,
+        "duration": 600,
+        "buffList": [{
+                "abillity": "power",
+                "percentage": 10
+            }
+        ]
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "main": {
+        "type": 1,
+        "target": 2,
+        "duration": 180,
+        "percentage": 90
+    },
+
+    "order": {
+        "type": 1,
+        "target": 1,
+        "duration": 180,
+        "percentage": 90
+    }
+}

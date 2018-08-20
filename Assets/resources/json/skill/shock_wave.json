@@ -1,0 +1,10 @@
+{
+    "main": {
+        "type": 2,
+        "hit": "Stun" 
+    },
+    "Stun" : {
+        "type" : 5,
+        "duration" : 180.0
+    }
+}

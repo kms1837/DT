@@ -1,0 +1,9 @@
+{
+    "main": {
+        "type": 3
+    },
+    "order": {
+        "type": 3,
+        "power": 30
+    }
+}

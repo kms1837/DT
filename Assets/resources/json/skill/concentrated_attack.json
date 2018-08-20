@@ -1,0 +1,11 @@
+{
+    "main": {
+        "duration": 180,
+        "percentage": 100
+    },
+
+    "order": {
+        "duration": 180,
+        "percentage": 10
+    }
+}

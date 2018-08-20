@@ -1,0 +1,17 @@
+{
+    "main": {
+        "type": 3,
+        "target": 1
+    },
+
+    "order": {
+        "type": 3,
+        "target": 1,
+        "hit": "freezing"
+    },
+
+    "freezing": {
+        "type": 5,
+        "duration": 180
+    }
+}

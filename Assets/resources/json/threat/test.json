@@ -1,0 +1,10 @@
+{
+    "filed": "forest",
+    "regen": [{
+        "monsterList": [7],
+        "cycle": 999999, 
+        "produce": 2
+    }],
+    "threat": [       
+    ]
+}

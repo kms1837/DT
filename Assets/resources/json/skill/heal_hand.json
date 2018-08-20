@@ -1,0 +1,11 @@
+{
+    "main" : {
+        "type" : 0,
+        "percentage": 50
+    },
+
+    "order" : {
+        "type" : 0,
+        "percentage": 100
+    }
+}

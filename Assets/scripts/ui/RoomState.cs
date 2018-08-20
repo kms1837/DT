@@ -12,6 +12,7 @@ public static class RoomState
         public string[] skillSpecNameList;
     }
 
+    public static int playerID; // 플레이어 id(저장소 변경할것)
     public static int orderUser; // 지휘유저 id
     public static int place; // 장소 id
     public static int gola; // 목표
