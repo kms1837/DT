@@ -11,6 +11,7 @@ public class BattleSystem : MonoBehaviour {
     public GameObject EnemyGroup;
     public GameObject UserSpecGroup;
     public GameObject Player; // 조작 하는 케릭터
+    public GameObject BackGround; // 배경
 
     public Text ThreatLabel;
 
@@ -43,16 +44,18 @@ public class BattleSystem : MonoBehaviour {
 
         // 더미
         RoomState.playerID = 1;
-        RoomState.orderUser = 1;
 
+        
         RoomState.place = 1;
         RoomState.threat = 1;
         /*
+        RoomState.orderUser = 1;
         RoomState.addUser(2);
         RoomState.addUser(3);
         RoomState.addUser(4);
         RoomState.addUser(5);
         */
+
         tupleType place = db.getTuple("places", RoomState.place);
         tupleType threat = db.getTuple("threats", RoomState.threat);
 
@@ -97,9 +100,10 @@ public class BattleSystem : MonoBehaviour {
         GameObject regenMonster = Instantiate(CharacterObject, EnemyGroup.transform);
         Character monsterInfo = regenMonster.GetComponent<Character>();
         Transform monsterVisual = regenMonster.transform.Find("Sprite");
-        Image monsterSprite = monsterVisual.GetComponent<Image>();
+        Image monsterSprite = regenMonster.GetComponent<Image>();
 
-        monsterSprite.sprite = Resources.Load<Sprite>((string)monsterData["sprite"]);
+        monsterInfo.setSprite((string)monsterData["sprite"]);
+
         monsterVisual.localScale = new Vector3(-1, 1, 1);
 
         regenMonster.transform.localPosition = new Vector2(1000, 0);
@@ -117,6 +121,7 @@ public class BattleSystem : MonoBehaviour {
         monsterInfo.delayBar.Add(headDelayBar);
 
         monsterInfo.destroyCallback = (() => {
+
             if (localScore.killPoint.ContainsKey(monsterID)) {
                 totalScore.killPoint[monsterID] += 1;
                 localScore.killPoint[monsterID] += 1;
@@ -330,7 +335,6 @@ public class BattleSystem : MonoBehaviour {
     private void userObjectSetting(GameObject setUser, tupleType userInfo) {
         Character user;
         RectTransform userRect;
-        Image userVisual;
         float positionX;
         int temp = 100;
 
@@ -343,8 +347,7 @@ public class BattleSystem : MonoBehaviour {
 
         userRect.localPosition = new Vector2(positionX, 0);
 
-        userVisual = setUser.transform.Find("Sprite").GetComponent<Image>();
-        userVisual.sprite = Resources.Load<Sprite>((string)userInfo["sprite"]);
+        user.setSprite((string)userInfo["sprite"], new Vector2(150, 240));
 
         // dummy
         user.infomation.energyPower += 300;
@@ -367,7 +370,7 @@ public class BattleSystem : MonoBehaviour {
         user.destroyCallback = (() => {
             UserSpecGroup.transform.GetChild(thisPanelIndex).Find("DeathStatus").gameObject.SetActive(true);
 
-            if (HeroGroup.transform.childCount >= 0) {
+            if (HeroGroup.transform.childCount <= 0) {
                 this.gameOver();
             }
         });
@@ -515,14 +518,48 @@ public class BattleSystem : MonoBehaviour {
                 break;
         }
     }
-    
-	void Update () {
+
+    private void backbroundTracking(Transform target) {
+        if (target != null) {
+            Vector3 targetPosition = target.position;
+            float movementSpeed = target.gameObject.GetComponent<Character>().infomation.movementSpeed;
+            int screenCenter = Screen.width / 2;
+
+            if (targetPosition.x > screenCenter) {
+                BackGround.transform.position = new Vector2(BackGround.transform.position.x - movementSpeed, BackGround.transform.position.y);
+                target.position = new Vector2(screenCenter, targetPosition.y);
+
+                foreach (Transform heroObj in HeroGroup.transform) {
+                    heroObj.position = new Vector2(heroObj.position.x - movementSpeed, heroObj.position.y);
+
+                    if (heroObj.position.x <= 0) {
+                        heroObj.position = new Vector2(0, heroObj.position.y);
+                    }
+                }
+
+                foreach (Transform enemyObj in EnemyGroup.transform) {
+                    enemyObj.position = new Vector2(enemyObj.position.x - movementSpeed, enemyObj.position.y);
+                }
+            }
+        }
+    }
+
+    void Update () {
+        Transform maxPosXObj = null;
+
         foreach (Transform heroObj in HeroGroup.transform) {
             basePattern(heroObj.transform, HeroGroup.transform, EnemyGroup.transform);
+
+            if (maxPosXObj == null || maxPosXObj.position.x < heroObj.position.x) {
+                maxPosXObj = heroObj;
+            }
+
         } // heros pattern
 
         foreach (Transform enemyObj in EnemyGroup.transform) {
             basePattern(enemyObj.transform, EnemyGroup.transform, HeroGroup.transform);
         } // enemys pattern
+
+        backbroundTracking(maxPosXObj);
     }
 }
