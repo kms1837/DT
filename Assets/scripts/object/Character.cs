@@ -49,6 +49,8 @@ public class Character : MonoBehaviour
     Color AfterDelayColor = new Color(255.0f, 150.0f, 0.0f);
     Color BeforeDelayColor= new Color(0.0f, 0.0f, 255.0f);
 
+    private const float baseWidth = 150;
+
     void Awake () {
         Vector2 objPosition = this.transform.position;
         Rect objRect = this.gameObject.GetComponent<RectTransform>().rect;
@@ -99,6 +101,25 @@ public class Character : MonoBehaviour
 	
 	void Update () {
         updateUI();
+    }
+
+    public void setSprite(string filePath) {
+        Transform spriteObject = this.transform.Find("Sprite");
+        Image setSprite = spriteObject.GetComponent<Image>();
+        Sprite loadSprite = Resources.Load<Sprite>(filePath);
+        RectTransform setSize = this.transform.Find("Sprite").GetComponent<RectTransform>();
+
+        float setHeight = loadSprite.rect.height * (baseWidth / loadSprite.rect.width);
+
+        setSprite.sprite = loadSprite;
+        setSize.sizeDelta = new Vector2(baseWidth, setHeight);
+    }
+
+    public void setSprite(string filePath, Vector2 size) {
+        setSprite(filePath);
+
+        RectTransform setSize = this.transform.Find("Sprite").GetComponent<RectTransform>();
+        setSize.sizeDelta = size;
     }
 
     public void setting(tupleType settingData, int inDirection) {
