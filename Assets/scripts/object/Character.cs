@@ -129,7 +129,7 @@ public class Character : MonoBehaviour
 
         this.infomation.healthPoint = (float)settingData["health_point"];
         this.currentHealthPoint = (float)settingData["health_point"];
-
+        
         this.infomation.beforeDelay = (float)settingData["before_delay"];
         this.infomation.afterDelay = (float)settingData["after_delay"];
 
@@ -151,7 +151,7 @@ public class Character : MonoBehaviour
 
         if (infomation.range >= distance) {
             Character attackTarget = target.GetComponent<Character>();
-            float damage = infomation.energyPower;
+            float damage = infomation.power;
 
             if (attackType == (int)CharacterAttackType.Heal) {
                 attackTarget.heal(this.infomation.power);

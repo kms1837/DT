@@ -55,7 +55,6 @@ public class BattleSystem : MonoBehaviour {
         RoomState.addUser(4);
         RoomState.addUser(5);
         */
-
         tupleType place = db.getTuple("places", RoomState.place);
         tupleType threat = db.getTuple("threats", RoomState.threat);
 
@@ -81,6 +80,7 @@ public class BattleSystem : MonoBehaviour {
 
         playerInit();
         usersInit();
+        map.backgroundBatch(BackGround, 0);
     }
 
     private void gameOver() {
@@ -254,9 +254,10 @@ public class BattleSystem : MonoBehaviour {
         skillBtnSetting(subvSkillBtn2.Find("CoolTimeBar"), playerObj.subSkillObj2);
         playerObj.subSkillObj2.coolTimeBar.Add(subSkillCollTimeBar2);
 
+        /*
         playerObj.equipments[0] = new Ability();
         playerObj.equipments[0].energyPower = 40; // 공격력 40 장비 장착 더미
-
+        */
         Player.transform.localPosition = new Vector2(userStartPoint.x, originPositionY);
     } // 플레이어 셋팅
 
@@ -540,11 +541,20 @@ public class BattleSystem : MonoBehaviour {
                 foreach (Transform enemyObj in EnemyGroup.transform) {
                     enemyObj.position = new Vector2(enemyObj.position.x - movementSpeed, enemyObj.position.y);
                 }
+
+                if (Mathf.Abs(BackGround.transform.position.x) % Screen.width == 0) {
+                    map.backgroundBatch(BackGround, (-1 * BackGround.transform.localPosition.x) + Screen.width);
+                    foreach (Transform backObject in BackGround.transform) {
+                        if (backObject.localPosition.x < Mathf.Abs(BackGround.transform.localPosition.x) - (Screen.width)) {
+                            Destroy(backObject.gameObject);
+                        }
+                    }
+                }
             }
         }
     }
 
-    void Update () {
+    private void FixedUpdate() {
         Transform maxPosXObj = null;
 
         foreach (Transform heroObj in HeroGroup.transform) {
@@ -553,7 +563,6 @@ public class BattleSystem : MonoBehaviour {
             if (maxPosXObj == null || maxPosXObj.position.x < heroObj.position.x) {
                 maxPosXObj = heroObj;
             }
-
         } // heros pattern
 
         foreach (Transform enemyObj in EnemyGroup.transform) {
