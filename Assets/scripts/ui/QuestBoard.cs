@@ -17,6 +17,7 @@ public class QuestBoard : MonoBehaviour
     public GameObject CreateUI;
     public GameObject RoomUI;
     public Transform BlackPanel;
+    public Transform SceneFaderImage;
 
     // 선택용 버튼(복제용)
     public GameObject SelectButton;
@@ -72,7 +73,7 @@ public class QuestBoard : MonoBehaviour
         homeBtnAction();
 
         room.Add("Skill", new ArrayList()); // skills
-        
+
         userList = new ArrayList();
 
         db = new DataBase("DT");
@@ -101,6 +102,10 @@ public class QuestBoard : MonoBehaviour
         dummyUsers.Add(5);
 
         recruitmentFlag = false;
+
+        SceneFaderImage.GetComponent<Fader>().fadeOutStart(() => {
+            SceneFaderImage.gameObject.SetActive(false);
+        });
     }
 
     private void changeUI() {
@@ -490,7 +495,9 @@ public class QuestBoard : MonoBehaviour
             RoomState.addUser(userID);
         }
 
-        SceneManager.LoadScene("battle_ground");
+        SceneFaderImage.GetComponent<Fader>().fadeInStart(() => {
+            SceneManager.LoadScene("battle_ground");
+        });
     }
 
     private void clearCreateUI() {

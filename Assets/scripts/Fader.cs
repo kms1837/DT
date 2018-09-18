@@ -42,7 +42,9 @@ public class Fader : MonoBehaviour {
 
         yield return new WaitForSecondsRealtime(0.5f);
 
-        endCallback();
+        if (endCallback != null) {
+            endCallback();
+        }
     }
 
     public void fadeOutStart(UnityEngine.Events.UnityAction endCallback) {
@@ -65,7 +67,9 @@ public class Fader : MonoBehaviour {
 
         yield return new WaitForSecondsRealtime(0.5f);
 
-        endCallback();
+        if (endCallback != null) {
+            endCallback();
+        }
     }
 
     public void fadeInOutStart(UnityEngine.Events.UnityAction endCallback) {
