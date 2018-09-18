@@ -12,6 +12,10 @@ public class BattleSystem : MonoBehaviour {
     public GameObject UserSpecGroup;
     public GameObject Player; // 조작 하는 케릭터
     public GameObject BackGround; // 배경
+    public GameObject TopView;
+    public GameObject TopStatusUI; // 상태관련 UI들
+    public Transform TopBlackPanel;
+    public Transform SceneFaderImage;
 
     public Text ThreatLabel;
 
@@ -30,6 +34,7 @@ public class BattleSystem : MonoBehaviour {
     private DataBase db;
     private RoomState.roomData roomInfo;
 
+    private List<Coroutine> regenCoroutines;
     private const float UIGAP = 10.0f;
     private Vector2 userStartPoint = new Vector2(-1000, 0);
 
@@ -44,8 +49,6 @@ public class BattleSystem : MonoBehaviour {
 
         // 더미
         RoomState.playerID = 1;
-
-        
         RoomState.place = 1;
         RoomState.threat = 1;
         /*
@@ -81,10 +84,20 @@ public class BattleSystem : MonoBehaviour {
         playerInit();
         usersInit();
         map.backgroundBatch(BackGround, 0);
+
+        SceneFaderImage.GetComponent<Fader>().fadeOutStart(() => {
+            SceneFaderImage.gameObject.SetActive(false);
+        });
     }
 
     private void gameOver() {
         Debug.Log("~ game over ~");
+        this.stopRegen();
+        Common.showBackPanel(TopView.transform, TopBlackPanel);
+
+        GameObject gameOverUI = TopStatusUI.transform.Find("GameOver").gameObject;
+        TopStatusUI.transform.SetAsLastSibling();
+        gameOverUI.SetActive(true);
     }
 
     IEnumerator regenCycle(Map.mapNode regenInfo) {
@@ -152,10 +165,17 @@ public class BattleSystem : MonoBehaviour {
     } // 몬스터 생성
 
     private void runRegen() {
+        regenCoroutines = new List<Coroutine>();
         foreach (Map.mapNode regenObj in map.regen) {
-            StartCoroutine(regenCycle(regenObj));
+            regenCoroutines.Add(StartCoroutine(regenCycle(regenObj)));
         }
     } // 몬스터를 일정시간마다 생성시키는것을 시작함
+
+    private void stopRegen() {
+        foreach (Coroutine regenObj in regenCoroutines) {
+            StopCoroutine(regenObj);
+        }
+    } // 몬스터 생성 중지
 
     private bool triggerCheck(Map.mapNode trigerObj, Score threatScore) {
         bool trigger = false;
@@ -370,8 +390,7 @@ public class BattleSystem : MonoBehaviour {
         int thisPanelIndex = HeroGroup.transform.childCount - 1;
         user.destroyCallback = (() => {
             UserSpecGroup.transform.GetChild(thisPanelIndex).Find("DeathStatus").gameObject.SetActive(true);
-
-            if (HeroGroup.transform.childCount <= 0) {
+            if ((HeroGroup.transform.childCount - 1) <= 0) {
                 this.gameOver();
             }
         });
